@@ -1,0 +1,23 @@
+---
+# ============================================================
+#  SITEMAP  —  src/sitemap.njk
+# ============================================================
+#
+#  Generates /sitemap.xml for search engines.
+#  Automatically includes all pages in collections.all
+#  (excludes 404, 403, robots.txt, webmanifest, and this file
+#  since they all have eleventyExcludeFromCollections: true).
+# ============================================================
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+layout: false
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.w3.org/2000/sitemaps/schemas/sitemap/0.9">
+{%- for entry in collections.all %}
+	<url>
+		<loc>{{ site.url }}{{ entry.url }}</loc>
+		<lastmod>{{ entry.date | isoDate }}</lastmod>
+	</url>
+{%- endfor %}
+</urlset>

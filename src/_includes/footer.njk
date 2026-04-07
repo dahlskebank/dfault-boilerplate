@@ -1,0 +1,32 @@
+<footer class="mt-auto py-lg-5 border-top text-center small" role="contentinfo">
+	<p>
+		<span class="d-block d-sm-inline"><a href="/legal/#privacy-policy">Privacy Policy</a> <i class="bi bi-dot"></i> <a href="/legal/#cookie-policy">Cookie Policy</a></span>
+		<i class="bi bi-dot d-none d-sm-inline"></i>
+		<span class="d-block d-sm-inline"><a href="/legal/#terms-of-service">Terms of Service</a> <i class="bi bi-dot"></i> <a href="/legal/">Legal Notice</a></span>
+	</p>
+
+	<p>
+		{# --- "Back to hub" link — disabled when we ARE the hub --- #} {% if site.footer.pendingUrl == site.url %}
+		<a href="{{ site.footer.pendingUrl }}" title="{{ site.footer.pendingLabel }}" class="nav-link disabled"
+			>{{ site.footer.pendingLabel }}</a
+		>
+		{% else %}
+		<a href="{{ site.footer.pendingUrl }}" target="_blank" rel="noopener" title="{{ site.footer.pendingLabel }}" class=""
+			>{{ site.footer.pendingLabel }}</a
+		>
+		{% endif %} {# --- Copyright line --- #}
+		<span class="d-none d-lg-inline">Copyright</span>
+		<i class="bi bi-c-circle"></i>
+		{{ site.footer.startYear }}&ndash;{% year %}
+		<i class="bi bi-dot"></i>
+		<a href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }}">{{ site.footer.copyrightName }}</a>
+		<i class="bi bi-dot"></i>
+		{{ site.footer.version }}
+		<br />
+
+		{# --- Brand links (loop through the array in site.json) --- The Nunjucks "loop" object gives us: - loop.last = true
+		on the final iteration (so we skip the trailing slash) #} {% for link in site.footer.links %}
+		<a href="{{ link.url }}" target="_blank" rel="noopener" title="{{ link.title }}">{{ link.label }}</a>
+		{%- if not loop.last %} <i class="bi bi-slash"></i> {% endif %} {% endfor %}
+	</p>
+</footer>

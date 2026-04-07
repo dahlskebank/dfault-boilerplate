@@ -1,0 +1,23 @@
+---
+# ============================================================
+#  403 PAGE  —  src/403.njk
+# ============================================================
+#
+#  Same permalink trick as 404.njk — we need this at the site
+#  root as 403.html for the .htaccess ErrorDocument directive.
+# ============================================================
+layout: base.njk
+title: 403 Access Forbidden
+mainClass: px-3 text-center
+permalink: /403.html
+eleventyExcludeFromCollections: true
+---
+
+<div>
+	<h1 class="display-1 text-danger">403</h1>
+	<h2 class="display-3 mb-4">Access Forbidden</h2>
+	<p class="lead text-secondary mb-5">
+		You don't have permission to see this page.
+	</p>
+	<a href="/" class="btn btn-lg btn-warning">Back to {{ site.name }}</a>
+</div>

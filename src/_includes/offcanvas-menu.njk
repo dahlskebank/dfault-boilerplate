@@ -1,0 +1,126 @@
+{#
+	 ============================================================
+		OFFCANVAS MENU  —  src/_includes/offcanvas-menu.njk
+	 ============================================================
+
+	 Navigation panel using Bootstrap Offcanvas — available on
+	 both mobile and desktop.  Reads the same nav.js data as
+	 the navbar.
+
+	 For dropdown parents (items with children):
+	   - A section header shows the parent label
+	   - The parent itself becomes the first link ("All [label]")
+	   - Children are listed below with slight indentation
+
+	 Active state uses page.url, same logic as navbar.
+	 ============================================================
+#}
+
+<div id="dd-offcanvas" class="offcanvas offcanvas-start dd-offcanvas-menu"
+	tabindex="-1" aria-labelledby="dd-offcanvas-label">
+
+	<div class="offcanvas-header d-none">
+		<h5 class="offcanvas-title" id="dd-offcanvas-label">{{ site.name }}</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+	</div>
+
+	<div class="offcanvas-body dd-offcanvas-nav">
+
+		{# --- Home link (always first) --- #}
+		<a class="nav-link{% if page.url == '/' %} active{% endif %}" href="/"
+			{% if page.url == '/' %}aria-current="page"{% endif %}>
+			<i class="bi bi-house-door me-1"></i> Home
+		</a>
+
+		<div class="dd-offcanvas-divider"></div>
+
+		{% for item in nav %}
+			{% if item.children %}
+				{# --- Section with children --- #}
+				<div class="dd-offcanvas-section">
+					<i class="{{ item.icon }} me-1"></i> {{ item.label }}
+				</div>
+
+				{# Parent as a clickable link (only shown if item has a url) #}
+				{% if item.url %}
+					<a class="nav-link dd-offcanvas-child{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
+						href="{{ item.url }}"
+						{% if page.url == item.url %}aria-current="page"{% endif %}>
+						<i class="{{ item.icon }} me-1"></i> All {{ item.label }}
+					</a>
+				{% endif %}
+
+				{# Children #}
+				{% for child in item.children %}
+					<a class="nav-link dd-offcanvas-child{% if child.disabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
+						href="{{ child.url }}"
+						{% if child.external %}target="_blank" rel="noopener"{% endif %}
+						{% if page.url == child.url %}aria-current="page"{% endif %}>
+						{% if child.icon %}<i class="{{ child.icon }} me-1"></i>{% endif %}
+						{{ child.label }}
+					</a>
+				{% endfor %}
+
+				<div class="dd-offcanvas-divider"></div>
+			{% else %}
+				{# --- Plain link --- #}
+				<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
+					href="{{ item.url }}"
+					{% if page.url == item.url %}aria-current="page"{% endif %}
+					{% if item.external %}target="_blank" rel="noopener"{% endif %}>
+					{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
+					{{ item.label }}
+					{% if item.external %}<i class="bi bi-box-arrow-up-right ms-auto small"></i>{% endif %}
+				</a>
+			{% endif %}
+		{% endfor %}
+
+		{# --- Dark/Light/Contrast toggle (from themes.js) --- #}
+		<div class="dd-offcanvas-divider"></div>
+		<div class="dd-offcanvas-section">
+			<i class="bi bi-circle-half me-1"></i> Toggle Theme
+		</div>
+		<div class="d-flex flex-wrap gap-1 px-3 pb-3">
+			{% for theme in themes %}
+				<button class="btn btn-sm btn-outline-secondary dd-theme-option{% if theme.group == 'standard' %} dd-theme-half{% else %} dd-theme-full{% endif %}"
+					data-theme="{{ theme.id }}">
+					<i class="{{ theme.icon }} me-1"></i> {{ theme.label }}
+				</button>
+			{% endfor %}
+		</div>
+
+		{# --- Bootswatch CSS framework switcher --- #}
+		<div class="dd-offcanvas-divider"></div>
+		<div class="dd-offcanvas-section">
+			<i class="bi bi-palette-fill me-1"></i> Bootswatch
+		</div>
+		<button class="nav-link dd-bootswatch-option" data-theme="default">Bootstrap (Default)</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="brite">Brite</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="cerulean">Cerulean</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="cosmo">Cosmo</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="cyborg">Cyborg</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="darkly">Darkly</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="flatly">Flatly</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="journal">Journal</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="litera">Litera</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="lumen">Lumen</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="lux">Lux</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="materia">Materia</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="minty">Minty</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="morph">Morph</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="pulse">Pulse</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="quartz">Quartz</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="sandstone">Sandstone</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="simplex">Simplex</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="sketchy">Sketchy</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="slate">Slate</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="solar">Solar</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="spacelab">Spacelab</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="superhero">Superhero</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="united">United</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="vapor">Vapor</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="yeti">Yeti</button>
+		<button class="nav-link dd-bootswatch-option" data-theme="zephyr">Zephyr</button>
+
+	</div>
+</div>

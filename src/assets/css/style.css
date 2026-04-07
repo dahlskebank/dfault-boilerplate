@@ -1,0 +1,474 @@
+/*
+	Eleventy + Bootstrap 5 Boilerplate
+	License:		WTFPL
+	License URI:	http://www.wtfpl.net/txt/copying/
+
+	FONTS:
+	By default this boilerplate uses system fonts. To use custom fonts:
+	1. Set googleFontsUrl in site.json (e.g. Google Fonts URL)
+	2. Update the font-family declarations below
+*/
+
+/*--------------------------------------------------------------
+>>> THEME CUSTOMIZATION STARTS HERE
+--------------------------------------------------------------*/
+
+/* Heading font — change this to match your Google Fonts choice.
+   System font stack is the default for maximum compatibility. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-weight: 700;
+}
+
+.navbar-brand {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-weight: 700;
+	line-height: 0;
+	padding: 0;
+	margin: 0;
+	font-size: 2rem;
+	letter-spacing: -0.01em;
+}
+
+/* Body font — system font stack */
+body,
+p {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-weight: 400;
+}
+
+/* Account for the fixed-top navbar height */
+body {
+	padding-top: 3rem;
+}
+
+/* Scrollbar styling — uses Bootstrap CSS variables to match any Bootswatch theme */
+@media only screen and (min-width: 768px) {
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+	::-webkit-scrollbar-track {
+		background: var(--bs-tertiary-bg);
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--bs-secondary-bg);
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: rgba(var(--bs-warning-rgb), 0.8);
+	}
+
+	::selection {
+		background: rgba(var(--bs-warning-rgb), 0.3);
+		color: var(--bs-emphasis-color);
+	}
+}
+
+.cover-container .container {
+	max-width: 60rem;
+}
+
+.dd-embossed {
+	background-color: rgba(0, 0, 0, 0.2);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	border-top: 1px solid rgba(0, 0, 0, 0.4);
+	border-left: 1px solid rgba(0, 0, 0, 0.4);
+	border-right: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow:
+		inset 0px 2px 50px rgba(0, 0, 0, 0.8),
+		inset 0px 0px 30px 1px rgba(0, 0, 0, 0.5);
+	border-radius: 8px;
+	padding: 3rem;
+}
+
+.tab-content.dd-embossed {
+	border-top: none;
+	border-radius: 0 0 8px 8px;
+}
+
+.dd-boxed {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 30px;
+	margin-bottom: 50px;
+	padding: 0;
+	box-shadow:
+		0 3px 10px rgba(0, 0, 0, 0.23),
+		0 3px 10px rgba(0, 0, 0, 0.16);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+@media only screen and (max-width: 767px) {
+	.dd-embossed {
+		padding: 1rem;
+	}
+}
+
+/*--------------------------------------------------------------
+>>> OFFCANVAS TOGGLE  —  always-visible menu button in navbar
+--------------------------------------------------------------*/
+
+/* Override Bootstrap hiding the navbar-toggler on lg+ breakpoints */
+.navbar-expand-lg #dd-offcanvas-toggle {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	padding: 0.25rem 0.4rem;
+	font-size: 1.5rem;
+	line-height: 1;
+	color: var(--bs-navbar-color);
+	background: transparent;
+	border: none;
+	transition: color 0.15s ease;
+}
+.navbar-expand-lg #dd-offcanvas-toggle:hover {
+	color: var(--bs-navbar-hover-color);
+}
+/* Remove Bootstrap's focus ring style in favour of a simple outline */
+.navbar-expand-lg #dd-offcanvas-toggle:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/*--------------------------------------------------------------
+>>> NAVBAR: bg-warning overrides
+--------------------------------------------------------------*/
+.navbar.bg-warning {
+	--bs-navbar-color: #000;
+	--bs-navbar-hover-color: #fff;
+	--bs-navbar-active-color: #fff;
+	--bs-navbar-brand-color: #000;
+	--bs-navbar-brand-hover-color: #fff;
+	--bs-navbar-toggler-border-color: rgba(0, 0, 0, 0.3);
+}
+/* Navbar brand should transition like the nav-links */
+.navbar.bg-warning .navbar-brand {
+	transition: color 0.15s ease;
+}
+/* Force dark toggler icon on light bg-warning, overrides data-bs-theme="dark" */
+.navbar.bg-warning .navbar-toggler-icon {
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/*--------------------------------------------------------------
+>>> GLOBAL: link color — uses Bootstrap warning color
+--------------------------------------------------------------*/
+a {
+	color: rgba(var(--bs-warning-rgb), var(--bs-text-opacity, 1));
+	transition: color 0.15s ease-in-out;
+}
+a:hover {
+	color: var(--bs-emphasis-color);
+}
+
+/* --- Dropdown active item --- */
+.dropdown-item.active,
+.dropdown-item:active {
+	background-color: rgba(var(--bs-warning-rgb), 0.85);
+	color: #000;
+}
+
+p a,
+footer a {
+	text-decoration: none;
+}
+
+p a:not(.btn):hover,
+p a:not(.btn):active,
+footer a:not(.btn):hover,
+footer a:not(.btn):active {
+	text-decoration: underline;
+}
+
+@media (hover: none) {
+	.tooltip {
+		display: none !important;
+	}
+}
+
+@media (max-width: 992px) {
+	/* Force dropdown to respect viewport height */
+	.dropdown-menu.show {
+		max-height: calc(100vh - 200px) !important; /* subtract navbar + safe margin */
+		overflow-y: auto !important;
+	}
+}
+
+/*--------------------------------------------------------------
+>>> HIGH-CONTRAST: DARK
+--------------------------------------------------------------*/
+.high-contrast-dark * {
+	color: #dddd !important;
+	background-color: #000 !important;
+	border-color: #ddd !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}
+
+.high-contrast-dark a:hover,
+.high-contrast-dark a:focus,
+.high-contrast-dark button:focus {
+	text-decoration: underline !important;
+}
+.high-contrast-dark a {
+	color: #ddd !important;
+}
+.high-contrast-dark svg * {
+	fill: #ddd !important;
+}
+.high-contrast-dark ::placeholder {
+	color: #ddd !important;
+	opacity: 0.75;
+}
+
+/*--------------------------------------------------------------
+>>> HIGH-CONTRAST: LIGHT
+--------------------------------------------------------------*/
+.high-contrast-light * {
+	color: #000 !important;
+	background-color: #ddd !important;
+	border-color: #000 !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}
+
+.high-contrast-light a:hover,
+.high-contrast-light a:focus,
+.high-contrast-light button:focus {
+	text-decoration: underline !important;
+}
+.high-contrast-light a {
+	color: #000 !important;
+}
+.high-contrast-light svg * {
+	fill: #000 !important;
+}
+.high-contrast-light ::placeholder {
+	color: #000 !important;
+	opacity: 0.75;
+}
+
+/*--------------------------------------------------------------
+>>> HIGH-CONTRAST: CUSTOM
+--------------------------------------------------------------*/
+.high-contrast-custom * {
+	color: #ffd800 !important;
+	background-color: #111 !important;
+	border-color: #ffd800 !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}
+.high-contrast-custom a:hover,
+.high-contrast-custom a:focus,
+.high-contrast-custom button:focus {
+	text-decoration: underline !important;
+}
+.high-contrast-custom a {
+	color: #ffd800 !important;
+}
+.high-contrast-custom svg * {
+	fill: #ffd800 !important;
+}
+.high-contrast-custom ::placeholder {
+	color: #ffd800 !important;
+	opacity: 0.75;
+}
+
+/*--------------------------------------------------------------
+>>> HIGH-CONTRAST DIV FIX
+--------------------------------------------------------------*/
+.high-contrast-custom .carousel-control-prev,
+.high-contrast-custom .carousel-control-next,
+.high-contrast-custom .carousel-control-next-icon,
+.high-contrast-custom .carousel-control-prev-icon,
+.high-contrast-light .carousel-control-prev,
+.high-contrast-light .carousel-control-next,
+.high-contrast-light .carousel-control-next-icon,
+.high-contrast-light .carousel-control-prev-icon,
+.high-contrast-dark .carousel-control-prev,
+.high-contrast-dark .carousel-control-next,
+.high-contrast-dark .carousel-control-next-icon,
+.high-contrast-dark .carousel-control-prev-icon {
+	background-color: rgb(0 0 0 / 0%) !important;
+}
+
+/*--------------------------------------------------------------
+>>> OFFCANVAS MENU
+--------------------------------------------------------------*/
+
+/* Match site theme — Bootstrap provides the offcanvas structure,
+   we just style the content and set the width. */
+.dd-offcanvas-menu {
+	max-width: 280px;
+	background-color: var(--bs-dark-bg-subtle);
+	color: var(--bs-body-color);
+	border-right: 1px solid var(--bs-border-color);
+}
+.dd-offcanvas-nav .nav-link {
+	color: var(--bs-body-color);
+	padding: 0.6rem 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.dd-offcanvas-nav .nav-link:hover,
+.dd-offcanvas-nav .nav-link.active {
+	color: rgba(var(--bs-warning-rgb), 1);
+	background-color: rgba(var(--bs-emphasis-color-rgb), 0.075);
+}
+.dd-offcanvas-nav .nav-link.disabled {
+	color: var(--bs-secondary-color);
+	opacity: 0.5;
+	pointer-events: none;
+}
+.dd-offcanvas-nav .dd-offcanvas-section {
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--bs-secondary-color);
+	padding: 1rem 1.25rem 0.25rem;
+}
+.dd-offcanvas-nav .dd-offcanvas-child {
+	padding-left: 2.5rem;
+	font-size: 0.9rem;
+}
+.dd-offcanvas-nav .dd-offcanvas-divider {
+	margin: 0.5rem 1.25rem;
+	border-top: 1px solid var(--bs-border-color);
+}
+
+.offcanvas-body.dd-offcanvas-nav {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.dd-bootswatch-option {
+	width: 100%;
+	font-size: 0.8rem;
+}
+
+button.nav-link.dd-bootswatch-option {
+	padding: 0.5rem 1.25rem;
+}
+
+/* Theme buttons: standard (Dark/Light) take 50% each, HC takes full width */
+.dd-theme-half {
+	flex: 1 1 calc(50% - 0.25rem);
+}
+.dd-theme-full {
+	flex: 1 1 100%;
+}
+
+/*--------------------------------------------------------------
+>>> PAGE ATMOSPHERE
+--------------------------------------------------------------*/
+
+/* Film grain overlay — static SVG noise, non-interactive.
+   z-index must stay below PhotoSwipe (~1500) to avoid blocking
+   touch events on its backdrop (click-outside-to-close). */
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1090;
+	opacity: 0.032;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+	background-size: 200px 200px;
+}
+
+/* Hide grain in high-contrast modes — preserves accessibility */
+body.high-contrast-dark::before,
+body.high-contrast-light::before,
+body.high-contrast-custom::before {
+	display: none;
+}
+
+/*--------------------------------------------------------------
+>>> PAGE ENTRY ANIMATIONS
+--------------------------------------------------------------*/
+@keyframes dd-enter-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+#dd-page .container > main {
+	animation: dd-enter-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: 0.05s;
+}
+
+#dd-page .container > footer {
+	animation: dd-enter-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: 0.18s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#dd-page .container > main,
+	#dd-page .container > footer {
+		animation: none;
+	}
+	body::before {
+		display: none;
+	}
+}
+
+/*--------------------------------------------------------------
+>>> NAVBAR DEPTH
+--------------------------------------------------------------*/
+.navbar.bg-warning {
+	box-shadow:
+		0 1px 0 rgba(0, 0, 0, 0.4),
+		0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+/*--------------------------------------------------------------
+>>> ANCHOR SCROLL OFFSET
+--------------------------------------------------------------*/
+
+/* Account for the fixed navbar height on desktop + the page entry
+   animation offset (14px) so anchors don't scroll behind the bar. */
+section[id] {
+	scroll-margin-top: 5rem;
+}
+
+/*--------------------------------------------------------------
+>>> DISPLAY HEADINGS
+--------------------------------------------------------------*/
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	line-height: 0.92;
+	letter-spacing: -0.01em;
+	text-transform: uppercase;
+}
+
+#dd-cookie-toast {
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	background: rgba(255, 255, 255, 0.1);
+}

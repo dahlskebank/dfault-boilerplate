@@ -1,0 +1,31 @@
+---
+# ============================================================
+#  PAGE FRONT MATTER  —  src/index.njk  (Home Page)
+# ============================================================
+#
+#  This YAML block between the --- markers is called "front matter."
+#  It sets variables that the layout (base.njk) and partials use.
+#
+#  REQUIRED:
+#    layout    →  Which layout file to wrap this page in.
+#                 Eleventy looks in src/_includes/ for this file.
+#
+#  OPTIONAL (override defaults from base.njk):
+#    title       →  Page title for <title> and meta tags
+#    description →  Meta description for SEO
+#    bodyClass   →  CSS classes on <body>
+#    mainClass   →  CSS classes on <main>
+#
+#  Everything below the second --- is the page content.
+#  It gets injected into {{ content | safe }} in base.njk.
+# ============================================================
+layout: base.njk
+mainClass: px-3 text-center
+---
+
+<h1 class="display-1">{{ site.name }}</h1>
+<p class="lead mb-4">{{ site.description }}</p>
+<p class="lead d-flex justify-content-center flex-wrap gap-2">
+	<a href="/about/" class="btn btn-lg btn-warning fw-bold">Learn More</a>
+	<a href="/contact/" class="btn btn-lg btn-outline-warning fw-bold">Get in Touch</a>
+</p>

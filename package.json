@@ -1,0 +1,15 @@
+{
+  "name": "eleventy-bootstrap-boilerplate",
+  "version": "1.0.0",
+  "description": "Eleventy 3.0 + Bootstrap 5.3 boilerplate with theme switching, SEO, accessibility, and Apache hosting",
+  "scripts": {
+    "start": "eleventy --serve",
+    "build": "eleventy && node scripts/minify.js"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "clean-css": "^5.3.3",
+    "prettier": "^3.8.1",
+    "terser": "^5.46.1"
+  }
+}

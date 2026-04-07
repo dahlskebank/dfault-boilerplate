@@ -1,0 +1,93 @@
+{#
+	 ============================================================
+		NAVBAR  —  src/_includes/navbar.njk
+	 ============================================================
+
+	 Data-driven navbar.  Menu items come from src/_data/nav.js.
+	 Active state is set by comparing item.url to page.url.
+
+	 nav.js item properties:
+		 label     — display text (required)
+		 url       — link href (required for plain links)
+		 icon      — Bootstrap Icon class, e.g. "bi-folder2-open"
+		 external  — true to open in new tab with rel="noopener"
+		 disabled  — true to render as disabled
+		 children  — array of sub-items (makes this a dropdown)
+
+	 The theme toggle is included separately — it's a UI control,
+	 not a navigation link, so it lives in its own partial.
+	 ============================================================
+#}
+
+<nav class="navbar navbar-expand-lg fixed-top bg-warning" data-bs-theme="dark">
+	<div class="container">
+
+		<a href="/" class="navbar-brand">{{ site.name }}</a>
+
+		<div class="collapse navbar-collapse d-none d-lg-flex" id="main-nav">
+			<ul class="navbar-nav ms-auto align-items-lg-center">
+
+				{# --- Menu items from nav.js --- #}
+				{% for item in nav %}
+					{% if item.children %}
+						{# Dropdown item — active if any child URL matches current page #}
+						{% set isParentActive = (page.url == item.url) %}
+						{% for child in item.children %}
+							{% if page.url == child.url %}{% set isParentActive = true %}{% endif %}
+						{% endfor %}
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle{% if isParentActive %} active{% endif %}" href="#" role="button"
+								data-bs-toggle="dropdown" aria-expanded="false"
+								{% if isParentActive %}aria-current="page"{% endif %}>
+								{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
+								{{ item.label }}
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end">
+								{% if item.url %}
+									<li>
+										<a class="dropdown-item{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
+											href="{{ item.url }}">
+											{% if item.icon %}<i class="{{ item.icon }} me-2"></i>{% endif %}
+											All {{ item.label }}
+										</a>
+									</li>
+									<li><hr class="dropdown-divider"></li>
+								{% endif %}
+								{% for child in item.children %}
+									<li>
+										<a class="dropdown-item{% if child.disabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
+											href="{{ child.url }}"
+											{% if child.external %}target="_blank" rel="noopener"{% endif %}>
+											{% if child.icon %}<i class="{{ child.icon }} me-2"></i>{% endif %}
+											{{ child.label }}
+										</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</li>
+					{% else %}
+						{# Plain link #}
+						<li class="nav-item mx-1">
+							<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
+								href="{{ item.url }}"
+								{% if page.url == item.url %}aria-current="page"{% endif %}
+								{% if item.external %}target="_blank" rel="noopener"{% endif %}>
+								{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
+								{{ item.label }}
+							</a>
+						</li>
+					{% endif %}
+				{% endfor %}
+
+			</ul>
+		</div>
+
+		{# --- Offcanvas toggle — always visible, opens the offcanvas menu on all breakpoints --- #}
+		<button class="navbar-toggler ms-2" type="button" id="dd-offcanvas-toggle"
+			data-bs-toggle="offcanvas" data-bs-target="#dd-offcanvas"
+			aria-controls="dd-offcanvas" aria-label="Toggle menu">
+			<i class="bi bi-list"></i>
+		</button>
+
+	</div>
+</nav>

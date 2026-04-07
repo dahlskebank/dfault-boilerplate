@@ -1,0 +1,29 @@
+---
+# ============================================================
+#  404 PAGE  —  src/404.njk
+# ============================================================
+#
+#  PERMALINK:
+#  By default, Eleventy would output this as _site/404/index.html.
+#  We override with `permalink: /404.html` so it lands at the
+#  site root as _site/404.html — which is where Apache (and most
+#  static hosts like Netlify/Vercel) expect to find it.
+#
+#  The .htaccess file has: ErrorDocument 404 /404.html
+# ============================================================
+layout: base.njk
+title: 404 Not Found
+mainClass: px-3 text-center
+permalink: /404.html
+eleventyExcludeFromCollections: true
+---
+
+<div>
+	<h1 class="display-1 text-danger">404</h1>
+	<h2 class="display-3 mb-4">Page Not Found</h2>
+	<p class="lead text-secondary mb-5">
+		The page you're looking for doesn't exist.<br>
+		Maybe try the home page?
+	</p>
+	<a href="/" class="btn btn-lg btn-warning">Back to {{ site.name }}</a>
+</div>

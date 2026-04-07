@@ -1,0 +1,17 @@
+---
+# ============================================================
+#  ROBOTS.TXT  —  src/robots.njk
+# ============================================================
+#
+#  Generates /robots.txt for search engine crawlers.
+#  Excluded from collections so it won't appear in sitemaps
+#  or navigation loops.
+# ============================================================
+permalink: /robots.txt
+eleventyExcludeFromCollections: true
+layout: false
+---
+User-agent: *
+Allow: /
+
+Sitemap: {{ site.url }}/sitemap.xml

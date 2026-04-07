@@ -1,0 +1,84 @@
+{# ============================================================
+		HEAD-META PARTIAL  —  src/_includes/head-meta.njk
+	 ============================================================
+
+	 This partial outputs all <meta> tags for SEO and social sharing.
+	 It's the Eleventy version of head-meta.php.
+
+	 HOW VALUES ARE RESOLVED (Eleventy "data cascade"):
+	 --------------------------------------------------
+	 Eleventy merges data from multiple sources in this priority order:
+		 1. Front matter in the page file       (highest priority)
+		 2. Directory-level data files
+		 3. Global data files in _data/         (lowest priority)
+
+	 So if a page sets `title: "My Page"` in its front matter,
+	 that overrides `site.name` from site.json.
+
+	 We use Nunjucks "default" filter:  {{ title | default(site.name) }}
+	 This means: "use `title` if the page defined it, otherwise fall back
+	 to `site.name` from site.json."
+
+	 BOILERPLATE NOTE:
+	 -----------------
+	 When starting a new project, update src/_data/site.json with your
+	 site's name, URL, description, and OG image.  These meta tags will
+	 automatically use those values as defaults for every page.
+	 ============================================================ #}
+
+{# --- Basic charset & viewport (required for responsive design) --- #}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+{# --- Page title — shown in browser tab and search results ---
+		 Inner pages: "Page Title / Site Name"
+		 Homepage (no title set): "Site Name / Site Description" #}
+<title>{% if title %}{{ title }} / {{ site.name }}{% else %}{{ site.name }} / {{ site.description }}{% endif %}</title>
+
+{# --- SEO meta tags --- #}
+<meta name="description" content="{{ description | default(site.description) }}">
+<meta name="author" content="{{ site.author.name }}">
+<meta name="robots" content="{{ robots | default('index, follow') }}">
+
+{# --- Open Graph (Facebook, LinkedIn, Discord, etc.) ---
+		 These control how your page looks when shared on social media.
+		 The og:image should be 1200x630px for best results. #}
+<meta property="og:type" content="{{ ogType | default('website') }}">
+<meta property="og:site_name" content="{{ site.name }}">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="{{ site.url }}{{ page.url }}">
+<meta property="og:title" content="{{ title | default(site.name) }}">
+<meta property="og:description" content="{{ description | default(site.description) }}">
+<meta property="og:image" content="{{ site.url }}{{ ogImage | default(site.ogImage) }}">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ title | default(site.name) }}">
+
+{# --- Twitter / X Card --- #}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ title | default(site.name) }}">
+<meta name="twitter:description" content="{{ description | default(site.description) }}">
+<meta name="twitter:image" content="{{ site.url }}{{ ogImage | default(site.ogImage) }}">
+
+{# --- Browser theme color (affects mobile browser chrome) --- #}
+<meta name="theme-color" content="{{ site.themeColor }}">
+
+{# --- JSON-LD structured data ---
+		 Provides machine-readable site info to search engines.
+		 Default: WebSite schema. Pages can override by setting jsonLd
+		 in front matter or by extending the {% block jsonld %} block. #}
+<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	"name": "{{ site.name }}",
+	"url": "{{ site.url }}",
+	"description": "{{ description | default(site.description) }}",
+	"author": {
+		"@type": "Person",
+		"name": "{{ site.author.name }}",
+		"url": "{{ site.author.url }}"
+	}
+}
+</script>

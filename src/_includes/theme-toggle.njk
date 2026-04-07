@@ -1,0 +1,28 @@
+{#
+	 ============================================================
+		THEME TOGGLE  —  src/_includes/theme-toggle.njk
+	 ============================================================
+
+	 Navbar dropdown with theme options from src/_data/themes.js.
+	 The JS (theme-toggle.js) binds to "dd-theme-option" class.
+	 ============================================================
+#}
+
+<li class="nav-item dropdown">
+	<a class="nav-link dropdown-toggle" href="#" role="button"
+		data-bs-toggle="dropdown" aria-expanded="false"
+		aria-label="Change theme">
+		<i class="bi bi-circle-half" id="dd-theme-icon"></i>
+		<span class="d-lg-none ms-2">Toggle Theme</span>
+	</a>
+	<ul class="dropdown-menu dropdown-menu-end">
+		{% set prevGroup = "" %}
+		{% for theme in themes %}
+			{% if prevGroup and prevGroup != theme.group %}
+				<li><hr class="dropdown-divider"></li>
+			{% endif %}
+			<li><button class="dropdown-item dd-theme-option" data-theme="{{ theme.id }}"><i class="{{ theme.icon }} me-2"></i>{{ theme.label }}</button></li>
+			{% set prevGroup = theme.group %}
+		{% endfor %}
+	</ul>
+</li>

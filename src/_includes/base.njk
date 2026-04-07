@@ -1,0 +1,109 @@
+{# ============================================================
+		BASE LAYOUT  —  src/_includes/base.njk
+	 ============================================================
+
+	 This is the master layout that wraps every page on the site.
+	 Think of it as the skeleton HTML that every page shares.
+
+	 HOW LAYOUTS WORK IN ELEVENTY:
+	 ----------------------------
+	 Each page file (like index.njk) specifies `layout: base.njk`
+	 in its front matter.  Eleventy then:
+		 1. Renders the page content
+		 2. Injects it into {{ content | safe }} below
+		 3. Outputs the complete HTML file
+
+	 The `| safe` filter tells Nunjucks "this content is already
+	 HTML, don't escape the < and > characters."
+
+	 FRONT MATTER VARIABLES:
+	 ----------------------
+	 Pages can set these in their front matter (the --- block):
+		 title       → Used in <title> and meta tags (falls back to site.name)
+		 description → Meta description (falls back to site.description)
+		 bodyClass   → CSS classes on <body> (default: "d-flex h-100 cover-container")
+		 mainClass   → CSS classes on <main> (default: "px-3")
+
+	 NUNJUCKS BLOCKS:
+	 ----------------
+	 {% block head %}{% endblock %} and {% block scripts %}{% endblock %}
+	 let individual pages inject extra <head> content or scripts.
+	 Pages that don't need these simply ignore the blocks.
+	 ============================================================ #}
+
+<!DOCTYPE html>
+<html lang="{{ site.lang }}" class="h-100" data-bs-theme="dark">
+<head>
+	{# --- SEO meta tags (title, description, Open Graph, Twitter Card) --- #}
+	{% include "head-meta.njk" %}
+
+	{# --- CSS, fonts, favicons, analytics --- #}
+	{% include "head-assets.njk" %}
+
+	{# --- Extra head content (pages can override this block) --- #}
+	{% block head %}{% endblock %}
+</head>
+
+<body class="{{ bodyClass | default('d-flex h-100 cover-container') }}">
+
+	{# --- Skip-to-content (accessibility — visible on focus) --- #}
+	<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-warning btn-sm" href="#content">Skip to main content</a>
+
+	{# --- Fixed-top navbar --- #}
+	{% include "navbar.njk" %}
+
+	{# --- Offcanvas navigation menu --- #}
+	{% include "offcanvas-menu.njk" %}
+
+	{# --- Page content wrapper --- #}
+	<div id="dd-page" class="w-100 d-flex flex-column">
+		<div class="container d-flex w-100 h-100 p-3 mx-auto flex-column">
+
+			{# --- Flex spacer — mb-auto pushes main+footer down,
+				 preserving the cover-page vertical centering. --- #}
+			<div class="mb-auto"></div>
+
+			<main id="content" class="{{ mainClass | default('px-3') }}">
+				{# --- Page content gets injected here --- #}
+				{{ content | safe }}
+			</main>
+
+			{% include "footer.njk" %}
+
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+					integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+					crossorigin="anonymous"></script>
+	<script src="/assets/js/dfault.js?v={{ cacheBust }}"></script>
+	<script src="/assets/js/theme-toggle.js?v={{ cacheBust }}"></script>
+	<script src="/assets/js/bootswatch-switcher.js?v={{ cacheBust }}"></script>
+	<script src="/assets/js/offcanvas-init.js?v={{ cacheBust }}"></script>
+
+	{# --- Extra scripts (pages can override this block) --- #}
+	{% block scripts %}{% endblock %}
+
+	{# --- Cookie consent toast — informational, non-blocking --- #}
+	<div class="position-fixed bottom-0 start-50 translate-middle-x mb-3" style="z-index:1055">
+		<div id="dd-cookie-toast" class="toast align-items-center text-center shadow-sm" role="alert" aria-live="polite" aria-atomic="true" data-bs-autohide="false">
+			<div class="d-flex">
+				<div class="toast-body small">
+					<i class="bi bi-cookie me-1"></i>
+					We use cookies to improve your experience. By continuing, you accept.
+					<a href="/legal/#cookie-policy">Would you like to know more?</a>
+				</div>
+				<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+			</div>
+		</div>
+	</div>
+	<script>
+		if (!localStorage.getItem("cookieConsent")) {
+			const t = document.getElementById("dd-cookie-toast");
+			new bootstrap.Toast(t).show();
+			t.addEventListener("hidden.bs.toast", () => localStorage.setItem("cookieConsent", "1"));
+		}
+	</script>
+
+</body>
+</html>

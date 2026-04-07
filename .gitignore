@@ -1,0 +1,27 @@
+# ============================================================
+#  .gitignore for Eleventy project
+# ============================================================
+
+# Eleventy build output (regenerated on every build)
+_site/
+
+# Node.js dependencies (reinstalled via npm install)
+node_modules/
+
+# Eleventy cache
+.cache/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+
+# Environment variables / secrets
+.env
+.env.*
+
+# Temp/scratch files
+_temp/

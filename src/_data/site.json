@@ -1,0 +1,61 @@
+{
+	"_comment": [
+		"============================================================",
+		" SITE-WIDE CONFIGURATION  —  src/_data/site.json",
+		"============================================================",
+		"",
+		" Every value here is available in ALL templates as {{ site.xxx }}.",
+		" This is the Eleventy equivalent of PHP config constants.",
+		"",
+		" For example, {{ site.name }} outputs your site name in any .njk file.",
+		" When reusing this boilerplate for a new project, update these",
+		" values and the entire site adapts automatically.",
+		"============================================================"
+	],
+
+	"name": "My Site",
+	"url": "https://example.com",
+	"description": "A short description of your site",
+	"lang": "en",
+
+	"author": {
+		"name": "Your Name",
+		"url": "https://yoursite.com"
+	},
+
+	"_comment_seo": "These are used in head-meta.njk for SEO and social sharing cards.",
+	"themeColor": "#212529",
+	"ogImage": "/assets/img/og-image.jpg",
+
+	"_comment_analytics": "Google Analytics measurement ID. Leave empty string to disable.",
+	"gaId": "",
+
+	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit. Set to 'default' for plain Bootstrap.",
+	"defaultBootswatchTheme": "default",
+
+	"_comment_fonts": "Google Fonts URL. Leave empty string to use system fonts. Example: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'",
+	"googleFontsUrl": "",
+
+	"_comment_webmanifest": "PWA web app manifest config — templated into site.webmanifest.njk. Keep in sync with themeColor in style.css.",
+	"webmanifest": {
+		"name": "My Site",
+		"shortName": "My Site",
+		"themeColor": "#212529",
+		"backgroundColor": "#000000"
+	},
+
+	"_comment_footer": [
+		"Footer configuration. The 'pending' link points back to the main hub.",
+		"On the hub itself this link is auto-disabled since it would point to itself.",
+		"On other projects using this boilerplate, it becomes an active link back to the hub."
+	],
+	"footer": {
+		"version": "v1.0.0",
+		"pendingLabel": "MY SITE",
+		"pendingUrl": "https://example.com",
+		"copyrightName": "Your Name",
+		"copyrightUrl": "https://yoursite.com",
+		"startYear": 2026,
+		"links": []
+	}
+}

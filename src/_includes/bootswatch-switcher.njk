@@ -1,0 +1,55 @@
+{#
+	 ============================================================
+		BOOTSWATCH SWITCHER  —  src/_includes/bootswatch-switcher.njk
+	 ============================================================
+
+	 A floating button (bottom-right) that opens a dropdown
+	 with all Bootswatch themes.  Mostly for dev/fun — include
+	 it when you want it, leave it out when you don't.
+
+	 USAGE:
+		 {% include "bootswatch-switcher.njk" %}
+		 (place in base.njk, before closing body tag)
+
+	 REQUIRES: bootswatch-switcher.js loaded after this partial.
+	 ============================================================
+#}
+
+<div class="dd-bootswatch-fab dropup">
+	<button class="btn btn-warning rounded-circle shadow-lg"
+		data-bs-toggle="dropdown" aria-expanded="false"
+		aria-label="Bootswatch themes"
+		data-bs-auto-close="true">
+		<i class="bi bi-palette-fill"></i>
+	</button>
+	<ul class="dropdown-menu dropdown-menu-end mb-2">
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="default">Bootstrap (Default)</button></li>
+		<li><hr class="dropdown-divider"></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="brite">Brite</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="cerulean">Cerulean</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="cosmo">Cosmo</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="cyborg">Cyborg</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="darkly">Darkly</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="flatly">Flatly</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="journal">Journal</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="litera">Litera</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="lumen">Lumen</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="lux">Lux</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="materia">Materia</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="minty">Minty</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="morph">Morph</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="pulse">Pulse</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="quartz">Quartz</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="sandstone">Sandstone</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="simplex">Simplex</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="sketchy">Sketchy</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="slate">Slate</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="solar">Solar</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="spacelab">Spacelab</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="superhero">Superhero</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="united">United</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="vapor">Vapor</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="yeti">Yeti</button></li>
+		<li><button class="dropdown-item dd-bootswatch-option" data-theme="zephyr">Zephyr</button></li>
+	</ul>
+</div>
