@@ -1,5 +1,7 @@
 /*
 	Eleventy + Bootstrap 5 Boilerplate
+	Author:			Daniel Dahl
+	Author URI:		http://danieldahl.com/
 	License:		WTFPL
 	License URI:	http://www.wtfpl.net/txt/copying/
 
@@ -10,44 +12,116 @@
 */
 
 /*--------------------------------------------------------------
->>> THEME CUSTOMIZATION STARTS HERE
+>>> TABLE OF CONTENTS:
+----------------------------------------------------------------
+	1.0 Body
+		1.1 Typography
+		1.2 Links
+		1.3 Scrollbar and selection
+	2.0 Layout
+		2.1 Container
+		2.2 Utility classes
+	3.0 Header
+		3.1 Navbar brand
+		3.2 Navbar depth
+		3.3 Navbar bg-warning overrides
+		3.4 Offcanvas toggle
+		3.5 Dropdown
+	4.0 Navigation
+		4.1 Offcanvas menu
+		4.2 Offcanvas menu links
+		4.3 Offcanvas sections and dividers
+		4.4 Theme switcher
+	5.0 Content
+		5.1 Display headings
+		5.2 Anchor scroll offset
+	6.0 Accessibility
+		6.1 High-contrast: dark
+		6.2 High-contrast: light
+		6.3 High-contrast: custom
+		6.4 High-contrast shared fixes
+		6.5 Cookie notice
+	7.0 Atmosphere
+		7.1 Film grain overlay
+		7.2 Page entry animations
+		7.3 Reduced motion
 --------------------------------------------------------------*/
 
-/* Heading font — change this to match your Google Fonts choice.
-   System font stack is the default for maximum compatibility. */
+/*--------------------------------------------------------------
+1.0		Body
+--------------------------------------------------------------*/
+
+body {
+	padding-top: 3rem;
+}
+
+:root {
+	--dfault-hcd-color: #ddd;
+	--dfault-hcl-color: #ddd;
+	--dfault-hcc-color: #ff6600;
+}
+
+/*--------------------------------------------------------------
+1.1		Typography
+--------------------------------------------------------------*/
+
+body,
+p {
+	font-family:
+		system-ui,
+		-apple-system,
+		"Segoe UI",
+		Roboto,
+		"Helvetica Neue",
+		Arial,
+		sans-serif;
+	font-weight: 400;
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-family:
+		system-ui,
+		-apple-system,
+		"Segoe UI",
+		Roboto,
+		"Helvetica Neue",
+		Arial,
+		sans-serif;
 	font-weight: 700;
 }
 
-.navbar-brand {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-	font-weight: 700;
-	line-height: 0;
-	padding: 0;
-	margin: 0;
-	font-size: 2rem;
-	letter-spacing: -0.01em;
+/*--------------------------------------------------------------
+1.2		Links
+--------------------------------------------------------------*/
+
+a {
+	transition: color 0.15s ease-in-out;
+}
+a:hover {
+	color: var(--bs-emphasis-color);
 }
 
-/* Body font — system font stack */
-body,
-p {
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-	font-weight: 400;
+p a,
+footer a {
+	text-decoration: none;
 }
 
-/* Account for the fixed-top navbar height */
-body {
-	padding-top: 3rem;
+p a:not(.btn):hover,
+p a:not(.btn):active,
+footer a:not(.btn):hover,
+footer a:not(.btn):active {
+	text-decoration: underline;
 }
 
-/* Scrollbar styling — uses Bootstrap CSS variables to match any Bootswatch theme */
+/*--------------------------------------------------------------
+1.3		Scrollbar and selection
+--------------------------------------------------------------*/
+
 @media only screen and (min-width: 768px) {
 	::-webkit-scrollbar {
 		width: 10px;
@@ -56,21 +130,33 @@ body {
 		background: var(--bs-tertiary-bg);
 	}
 	::-webkit-scrollbar-thumb {
-		background: var(--bs-secondary-bg);
+		background: rgba(var(--bs-primary-rgb), 0.3);
 	}
 	::-webkit-scrollbar-thumb:hover {
-		background: rgba(var(--bs-warning-rgb), 0.8);
+		background: rgba(var(--bs-primary-rgb), 0.8);
 	}
 
 	::selection {
-		background: rgba(var(--bs-warning-rgb), 0.3);
+		background: rgba(var(--bs-primary-rgb), 0.3);
 		color: var(--bs-emphasis-color);
 	}
 }
 
+/*--------------------------------------------------------------
+2.0		Layout
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+2.1		Container
+--------------------------------------------------------------*/
+
 .cover-container .container {
 	max-width: 60rem;
 }
+
+/*--------------------------------------------------------------
+2.2		Utility classes
+--------------------------------------------------------------*/
 
 .dd-embossed {
 	background-color: rgba(0, 0, 0, 0.2);
@@ -83,6 +169,7 @@ body {
 		inset 0px 0px 30px 1px rgba(0, 0, 0, 0.5);
 	border-radius: 8px;
 	padding: 3rem;
+	padding-bottom: 3.5rem;
 }
 
 .tab-content.dd-embossed {
@@ -110,10 +197,65 @@ body {
 }
 
 /*--------------------------------------------------------------
->>> OFFCANVAS TOGGLE  —  always-visible menu button in navbar
+3.0		Header
 --------------------------------------------------------------*/
 
-/* Override Bootstrap hiding the navbar-toggler on lg+ breakpoints */
+/*--------------------------------------------------------------
+3.1		Navbar brand
+--------------------------------------------------------------*/
+
+.navbar-brand {
+	font-family:
+		system-ui,
+		-apple-system,
+		"Segoe UI",
+		Roboto,
+		"Helvetica Neue",
+		Arial,
+		sans-serif;
+	font-weight: 700;
+	line-height: 0;
+	padding: 0;
+	margin: 0;
+	font-size: 2rem;
+	letter-spacing: -0.01em;
+}
+
+/*--------------------------------------------------------------
+3.2		Navbar depth
+--------------------------------------------------------------*/
+
+.navbar {
+	box-shadow:
+		0 1px 0 rgba(0, 0, 0, 0.4),
+		0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+/*--------------------------------------------------------------
+3.3		Navbar bg-warning overrides
+--------------------------------------------------------------*/
+
+.navbar.bg-warning {
+	--bs-navbar-color: #000;
+	--bs-navbar-hover-color: #fff;
+	--bs-navbar-active-color: #fff;
+	--bs-navbar-brand-color: #000;
+	--bs-navbar-brand-hover-color: #fff;
+	--bs-navbar-toggler-border-color: rgba(0, 0, 0, 0.3);
+}
+
+.navbar .navbar-brand {
+	transition: color 0.15s ease;
+}
+
+.navbar.bg-warning .navbar-toggler-icon {
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/*--------------------------------------------------------------
+3.4		Offcanvas toggle
+--------------------------------------------------------------*/
+
 .navbar-expand-lg #dd-offcanvas-toggle {
 	display: flex !important;
 	align-items: center;
@@ -129,7 +271,6 @@ body {
 .navbar-expand-lg #dd-offcanvas-toggle:hover {
 	color: var(--bs-navbar-hover-color);
 }
-/* Remove Bootstrap's focus ring style in favour of a simple outline */
 .navbar-expand-lg #dd-offcanvas-toggle:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
@@ -137,54 +278,16 @@ body {
 }
 
 /*--------------------------------------------------------------
->>> NAVBAR: bg-warning overrides
+3.5		Dropdown
 --------------------------------------------------------------*/
-.navbar.bg-warning {
-	--bs-navbar-color: #000;
-	--bs-navbar-hover-color: #fff;
-	--bs-navbar-active-color: #fff;
-	--bs-navbar-brand-color: #000;
-	--bs-navbar-brand-hover-color: #fff;
-	--bs-navbar-toggler-border-color: rgba(0, 0, 0, 0.3);
-}
-/* Navbar brand should transition like the nav-links */
-.navbar.bg-warning .navbar-brand {
-	transition: color 0.15s ease;
-}
-/* Force dark toggler icon on light bg-warning, overrides data-bs-theme="dark" */
-.navbar.bg-warning .navbar-toggler-icon {
-	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
-}
 
-/*--------------------------------------------------------------
->>> GLOBAL: link color — uses Bootstrap warning color
---------------------------------------------------------------*/
-a {
-	color: rgba(var(--bs-warning-rgb), var(--bs-text-opacity, 1));
-	transition: color 0.15s ease-in-out;
-}
-a:hover {
-	color: var(--bs-emphasis-color);
-}
-
-/* --- Dropdown active item --- */
+/*
 .dropdown-item.active,
 .dropdown-item:active {
-	background-color: rgba(var(--bs-warning-rgb), 0.85);
+	background-color: rgba(var(--bs-primary-rgb), 0.85);
 	color: #000;
 }
-
-p a,
-footer a {
-	text-decoration: none;
-}
-
-p a:not(.btn):hover,
-p a:not(.btn):active,
-footer a:not(.btn):hover,
-footer a:not(.btn):active {
-	text-decoration: underline;
-}
+*/
 
 @media (hover: none) {
 	.tooltip {
@@ -193,20 +296,123 @@ footer a:not(.btn):active {
 }
 
 @media (max-width: 992px) {
-	/* Force dropdown to respect viewport height */
 	.dropdown-menu.show {
-		max-height: calc(100vh - 200px) !important; /* subtract navbar + safe margin */
+		max-height: calc(100vh - 200px) !important;
 		overflow-y: auto !important;
 	}
 }
 
 /*--------------------------------------------------------------
->>> HIGH-CONTRAST: DARK
+4.0		Navigation
 --------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+4.1		Offcanvas menu
+--------------------------------------------------------------*/
+
+.dd-offcanvas-menu {
+	max-width: 280px;
+	/*	background-color: var(--bs-dark-bg-subtle); */
+	color: var(--bs-body-color);
+	border-right: 1px solid var(--bs-border-color);
+}
+
+.offcanvas-body.dd-offcanvas-nav {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/*--------------------------------------------------------------
+4.2		Offcanvas menu links
+--------------------------------------------------------------*/
+
+.dd-offcanvas-nav .nav-link {
+	color: var(--bs-body-color);
+	padding: 0.6rem 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.dd-offcanvas-nav .nav-link:hover,
+.dd-offcanvas-nav .nav-link.active {
+	color: rgba(var(--bs-primary-rgb), 1);
+	background-color: rgba(var(--bs-emphasis-color-rgb), 0.075);
+}
+.dd-offcanvas-nav .nav-link.disabled {
+	color: var(--bs-secondary-color);
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+/*--------------------------------------------------------------
+4.3		Offcanvas sections and dividers
+--------------------------------------------------------------*/
+
+.dd-offcanvas-nav .dd-offcanvas-section {
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--bs-secondary-color);
+	padding: 1rem 1.25rem 0.25rem;
+}
+.dd-offcanvas-nav .dd-offcanvas-child {
+	padding-left: 2.5rem;
+	font-size: 0.9rem;
+}
+.dd-offcanvas-nav .dd-offcanvas-divider {
+	margin: 0.5rem 1.25rem;
+	border-top: 1px solid var(--bs-border-color);
+}
+
+/*--------------------------------------------------------------
+4.4		Theme switcher
+--------------------------------------------------------------*/
+
+.dd-bootswatch-option {
+	width: 100%;
+	font-size: 0.8rem;
+}
+
+button.nav-link.dd-bootswatch-option {
+	padding: 0.5rem 1.25rem;
+}
+
+.dd-theme-half {
+	flex: 1 1 calc(50% - 0.25rem);
+}
+.dd-theme-full {
+	flex: 1 1 100%;
+}
+
+/*--------------------------------------------------------------
+5.0		Content
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+5.1		Display headings
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+5.2		Anchor scroll offset
+--------------------------------------------------------------*/
+
+section[id] {
+	scroll-margin-top: 5rem;
+}
+
+/*--------------------------------------------------------------
+6.0		Accessibility
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+6.1		High-contrast: dark
+--------------------------------------------------------------*/
+
 .high-contrast-dark * {
-	color: #dddd !important;
+	color: var(--dfault-hcd-color) !important;
 	background-color: #000 !important;
-	border-color: #ddd !important;
+	border-color: var(--dfault-hcd-color) !important;
 	box-shadow: none !important;
 	text-shadow: none !important;
 	border-radius: 0 !important;
@@ -218,22 +424,23 @@ footer a:not(.btn):active {
 	text-decoration: underline !important;
 }
 .high-contrast-dark a {
-	color: #ddd !important;
+	color: var(--dfault-hcd-color) !important;
 }
 .high-contrast-dark svg * {
-	fill: #ddd !important;
+	fill: var(--dfault-hcd-color) !important;
 }
 .high-contrast-dark ::placeholder {
-	color: #ddd !important;
+	color: var(--dfault-hcd-color) !important;
 	opacity: 0.75;
 }
 
 /*--------------------------------------------------------------
->>> HIGH-CONTRAST: LIGHT
+6.2		High-contrast: light
 --------------------------------------------------------------*/
+
 .high-contrast-light * {
 	color: #000 !important;
-	background-color: #ddd !important;
+	background-color: var(--dfault-hcl-color) !important;
 	border-color: #000 !important;
 	box-shadow: none !important;
 	text-shadow: none !important;
@@ -257,12 +464,13 @@ footer a:not(.btn):active {
 }
 
 /*--------------------------------------------------------------
->>> HIGH-CONTRAST: CUSTOM
+6.3		High-contrast: custom
 --------------------------------------------------------------*/
+
 .high-contrast-custom * {
-	color: #ffd800 !important;
+	color: var(--dfault-hcc-color) !important;
 	background-color: #111 !important;
-	border-color: #ffd800 !important;
+	border-color: var(--dfault-hcc-color) !important;
 	box-shadow: none !important;
 	text-shadow: none !important;
 	border-radius: 0 !important;
@@ -273,19 +481,20 @@ footer a:not(.btn):active {
 	text-decoration: underline !important;
 }
 .high-contrast-custom a {
-	color: #ffd800 !important;
+	color: var(--dfault-hcc-color) !important;
 }
 .high-contrast-custom svg * {
-	fill: #ffd800 !important;
+	fill: var(--dfault-hcc-color) !important;
 }
 .high-contrast-custom ::placeholder {
-	color: #ffd800 !important;
+	color: var(--dfault-hcc-color) !important;
 	opacity: 0.75;
 }
 
 /*--------------------------------------------------------------
->>> HIGH-CONTRAST DIV FIX
+6.4		High-contrast shared fixes
 --------------------------------------------------------------*/
+
 .high-contrast-custom .carousel-control-prev,
 .high-contrast-custom .carousel-control-next,
 .high-contrast-custom .carousel-control-next-icon,
@@ -302,80 +511,23 @@ footer a:not(.btn):active {
 }
 
 /*--------------------------------------------------------------
->>> OFFCANVAS MENU
+6.5		Cookie notice
 --------------------------------------------------------------*/
 
-/* Match site theme — Bootstrap provides the offcanvas structure,
-   we just style the content and set the width. */
-.dd-offcanvas-menu {
-	max-width: 280px;
-	background-color: var(--bs-dark-bg-subtle);
-	color: var(--bs-body-color);
-	border-right: 1px solid var(--bs-border-color);
-}
-.dd-offcanvas-nav .nav-link {
-	color: var(--bs-body-color);
-	padding: 0.6rem 1.25rem;
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-.dd-offcanvas-nav .nav-link:hover,
-.dd-offcanvas-nav .nav-link.active {
-	color: rgba(var(--bs-warning-rgb), 1);
-	background-color: rgba(var(--bs-emphasis-color-rgb), 0.075);
-}
-.dd-offcanvas-nav .nav-link.disabled {
-	color: var(--bs-secondary-color);
-	opacity: 0.5;
-	pointer-events: none;
-}
-.dd-offcanvas-nav .dd-offcanvas-section {
-	font-size: 0.7rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--bs-secondary-color);
-	padding: 1rem 1.25rem 0.25rem;
-}
-.dd-offcanvas-nav .dd-offcanvas-child {
-	padding-left: 2.5rem;
-	font-size: 0.9rem;
-}
-.dd-offcanvas-nav .dd-offcanvas-divider {
-	margin: 0.5rem 1.25rem;
-	border-top: 1px solid var(--bs-border-color);
-}
-
-.offcanvas-body.dd-offcanvas-nav {
-	padding-left: 0;
-	padding-right: 0;
-}
-
-.dd-bootswatch-option {
-	width: 100%;
-	font-size: 0.8rem;
-}
-
-button.nav-link.dd-bootswatch-option {
-	padding: 0.5rem 1.25rem;
-}
-
-/* Theme buttons: standard (Dark/Light) take 50% each, HC takes full width */
-.dd-theme-half {
-	flex: 1 1 calc(50% - 0.25rem);
-}
-.dd-theme-full {
-	flex: 1 1 100%;
+#dd-cookie-toast {
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	background: rgba(255, 255, 255, 0.1);
 }
 
 /*--------------------------------------------------------------
->>> PAGE ATMOSPHERE
+7.0		Atmosphere
 --------------------------------------------------------------*/
 
-/* Film grain overlay — static SVG noise, non-interactive.
-   z-index must stay below PhotoSwipe (~1500) to avoid blocking
-   touch events on its backdrop (click-outside-to-close). */
+/*--------------------------------------------------------------
+7.1		Film grain overlay
+--------------------------------------------------------------*/
+
 body::before {
 	content: "";
 	position: fixed;
@@ -387,7 +539,6 @@ body::before {
 	background-size: 200px 200px;
 }
 
-/* Hide grain in high-contrast modes — preserves accessibility */
 body.high-contrast-dark::before,
 body.high-contrast-light::before,
 body.high-contrast-custom::before {
@@ -395,8 +546,9 @@ body.high-contrast-custom::before {
 }
 
 /*--------------------------------------------------------------
->>> PAGE ENTRY ANIMATIONS
+7.2		Page entry animations
 --------------------------------------------------------------*/
+
 @keyframes dd-enter-up {
 	from {
 		opacity: 0;
@@ -418,6 +570,10 @@ body.high-contrast-custom::before {
 	animation-delay: 0.18s;
 }
 
+/*--------------------------------------------------------------
+7.3		Reduced motion
+--------------------------------------------------------------*/
+
 @media (prefers-reduced-motion: reduce) {
 	#dd-page .container > main,
 	#dd-page .container > footer {
@@ -426,49 +582,4 @@ body.high-contrast-custom::before {
 	body::before {
 		display: none;
 	}
-}
-
-/*--------------------------------------------------------------
->>> NAVBAR DEPTH
---------------------------------------------------------------*/
-.navbar.bg-warning {
-	box-shadow:
-		0 1px 0 rgba(0, 0, 0, 0.4),
-		0 4px 18px rgba(0, 0, 0, 0.35);
-}
-
-/*--------------------------------------------------------------
->>> ANCHOR SCROLL OFFSET
---------------------------------------------------------------*/
-
-/* Account for the fixed navbar height on desktop + the page entry
-   animation offset (14px) so anchors don't scroll behind the bar. */
-section[id] {
-	scroll-margin-top: 5rem;
-}
-
-/*--------------------------------------------------------------
->>> DISPLAY HEADINGS
---------------------------------------------------------------*/
-.display-1,
-.display-2,
-.display-3,
-.display-4,
-.display-5,
-.display-6,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	line-height: 0.92;
-	letter-spacing: -0.01em;
-	text-transform: uppercase;
-}
-
-#dd-cookie-toast {
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	background: rgba(255, 255, 255, 0.1);
 }

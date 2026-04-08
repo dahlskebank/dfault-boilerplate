@@ -31,9 +31,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 {# --- Page title — shown in browser tab and search results ---
-		 Inner pages: "Page Title / Site Name"
-		 Homepage (no title set): "Site Name / Site Description" #}
-<title>{% if title %}{{ title }} / {{ site.name }}{% else %}{{ site.name }} / {{ site.description }}{% endif %}</title>
+		 Inner pages: "Page Title | Site Name"
+		 Homepage (no title set): "Site Name | Site Description" #}
+<title>{% if title %}{{ title }}  |  {{ site.name }}{% else %}{{ site.name }}  –  {{ site.description }}{% endif %}</title>
 
 {# --- SEO meta tags --- #}
 <meta name="description" content="{{ description | default(site.description) }}">

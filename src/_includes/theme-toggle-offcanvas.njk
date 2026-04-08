@@ -1,0 +1,25 @@
+{#
+	 ============================================================
+		THEME TOGGLE (OFFCANVAS)  —  src/_includes/theme-toggle-offcanvas.njk
+	 ============================================================
+
+	 Dark/Light/High-contrast theme buttons for the offcanvas menu.
+	 Uses the same themes.js data and dd-theme-option class as the
+	 navbar version (theme-toggle.njk).
+
+	 Included by offcanvas-menu.njk.
+	 ============================================================
+#}
+
+<div class="dd-offcanvas-divider"></div>
+<div class="dd-offcanvas-section">
+	<i class="bi bi-circle-half me-1"></i> Toggle Theme
+</div>
+<div class="d-flex flex-wrap gap-1 px-3 pb-3">
+	{% for theme in themes %}
+		<button class="btn btn-sm btn-outline-secondary dd-theme-option{% if theme.group == 'standard' %} dd-theme-half{% else %} dd-theme-full{% endif %}"
+			data-theme="{{ theme.id }}">
+			<i class="{{ theme.icon }} me-1"></i> {{ theme.label }}
+		</button>
+	{% endfor %}
+</div>

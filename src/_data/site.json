@@ -30,8 +30,9 @@
 	"_comment_analytics": "Google Analytics measurement ID. Leave empty string to disable.",
 	"gaId": "",
 
-	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit. Set to 'default' for plain Bootstrap.",
+	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit. Set to 'default' for plain Bootstrap. Set bootswatchSwitcher to false to hide the theme switcher in production.",
 	"defaultBootswatchTheme": "default",
+	"bootswatchSwitcher": false,
 
 	"_comment_fonts": "Google Fonts URL. Leave empty string to use system fonts. Example: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'",
 	"googleFontsUrl": "",
@@ -50,12 +51,16 @@
 		"On other projects using this boilerplate, it becomes an active link back to the hub."
 	],
 	"footer": {
-		"version": "v1.0.0",
-		"pendingLabel": "MY SITE",
-		"pendingUrl": "https://example.com",
+		"version": "v1.0.2",
+		"pendingLabel": "D-FAULT PENDING",
+		"pendingUrl": "https://dfault.it",
 		"copyrightName": "Your Name",
 		"copyrightUrl": "https://yoursite.com",
-		"startYear": 2026,
-		"links": []
+		"startYear": 1984,
+		"links": [
+			{ "label": "Powered by dB", "url": "https://dahlskebank.com", "title": "Dahlske Bank" },
+			{ "label": "Fueled by dD", "url": "https://danieldahl.com", "title": "Daniel Dahl" },
+			{ "label": "Part of dxD", "url": "https://dxd.no", "title": "deus ex Dahl" }
+		]
 	}
 }

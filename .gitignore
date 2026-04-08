@@ -25,3 +25,6 @@ Thumbs.db
 
 # Temp/scratch files
 _temp/
+
+# Claude Code local settings
+.claude/

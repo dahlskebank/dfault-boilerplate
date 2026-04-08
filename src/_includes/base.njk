@@ -47,7 +47,7 @@
 <body class="{{ bodyClass | default('d-flex h-100 cover-container') }}">
 
 	{# --- Skip-to-content (accessibility — visible on focus) --- #}
-	<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-warning btn-sm" href="#content">Skip to main content</a>
+	<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-primary btn-sm" href="#content">Skip to main content</a>
 
 	{# --- Fixed-top navbar --- #}
 	{% include "navbar.njk" %}
@@ -78,7 +78,7 @@
 					crossorigin="anonymous"></script>
 	<script src="/assets/js/dfault.js?v={{ cacheBust }}"></script>
 	<script src="/assets/js/theme-toggle.js?v={{ cacheBust }}"></script>
-	<script src="/assets/js/bootswatch-switcher.js?v={{ cacheBust }}"></script>
+	{% if site.bootswatchSwitcher %}<script src="/assets/js/bootswatch-switcher.js?v={{ cacheBust }}"></script>{% endif %}
 	<script src="/assets/js/offcanvas-init.js?v={{ cacheBust }}"></script>
 
 	{# --- Extra scripts (pages can override this block) --- #}
@@ -90,7 +90,7 @@
 			<div class="d-flex">
 				<div class="toast-body small">
 					<i class="bi bi-cookie me-1"></i>
-					We use cookies to improve your experience. By continuing, you accept.
+					We use cookies to improve our experience. By continuing, you accept.
 					<a href="/legal/#cookie-policy">Would you like to know more?</a>
 				</div>
 				<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>

@@ -19,7 +19,7 @@
 	 ============================================================
 #}
 
-<nav class="navbar navbar-expand-lg fixed-top bg-warning" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark">
 	<div class="container">
 
 		<a href="/" class="navbar-brand">{{ site.name }}</a>
@@ -78,6 +78,9 @@
 						</li>
 					{% endif %}
 				{% endfor %}
+
+			{# --- Theme toggle (dark/light/high-contrast) --- #}
+			{% include "theme-toggle.njk" %}
 
 			</ul>
 		</div>

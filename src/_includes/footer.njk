@@ -1,25 +1,24 @@
-<footer class="mt-auto py-lg-5 border-top text-center small" role="contentinfo">
-	<p>
+<footer class="mt-auto py-4 py-lg-5 border-top text-center small" role="contentinfo">
+	<p class="pb-1">
 		<span class="d-block d-sm-inline"><a href="/legal/#privacy-policy">Privacy Policy</a> <i class="bi bi-dot"></i> <a href="/legal/#cookie-policy">Cookie Policy</a></span>
 		<i class="bi bi-dot d-none d-sm-inline"></i>
 		<span class="d-block d-sm-inline"><a href="/legal/#terms-of-service">Terms of Service</a> <i class="bi bi-dot"></i> <a href="/legal/">Legal Notice</a></span>
 	</p>
 
-	<p>
+	<p class="mb-0">
 		{# --- "Back to hub" link — disabled when we ARE the hub --- #} {% if site.footer.pendingUrl == site.url %}
 		<a href="{{ site.footer.pendingUrl }}" title="{{ site.footer.pendingLabel }}" class="nav-link disabled"
 			>{{ site.footer.pendingLabel }}</a
 		>
 		{% else %}
-		<a href="{{ site.footer.pendingUrl }}" target="_blank" rel="noopener" title="{{ site.footer.pendingLabel }}" class=""
-			>{{ site.footer.pendingLabel }}</a
-		>
+		<a href="{{ site.footer.pendingUrl }}" target="_blank" rel="noopener" title="{{ site.footer.pendingLabel }}" class="fw-bold"
+			>{{ site.footer.pendingLabel }}</a><br>
 		{% endif %} {# --- Copyright line --- #}
 		<span class="d-none d-lg-inline">Copyright</span>
 		<i class="bi bi-c-circle"></i>
-		{{ site.footer.startYear }}&ndash;{% year %}
+		{{ site.footer.startYear }} <i class="bi bi-activity"></i> {% year %}
 		<i class="bi bi-dot"></i>
-		<a href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }}">{{ site.footer.copyrightName }}</a>
+		<a href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }} | {{ site.description }}">{{ site.footer.copyrightName }}</a>
 		<i class="bi bi-dot"></i>
 		{{ site.footer.version }}
 		<br />

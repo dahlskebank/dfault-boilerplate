@@ -19,7 +19,7 @@
 <div id="dd-offcanvas" class="offcanvas offcanvas-start dd-offcanvas-menu"
 	tabindex="-1" aria-labelledby="dd-offcanvas-label">
 
-	<div class="offcanvas-header d-none">
+	<div class="offcanvas-header">
 		<h5 class="offcanvas-title" id="dd-offcanvas-label">{{ site.name }}</h5>
 		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 	</div>
@@ -76,51 +76,12 @@
 		{% endfor %}
 
 		{# --- Dark/Light/Contrast toggle (from themes.js) --- #}
-		<div class="dd-offcanvas-divider"></div>
-		<div class="dd-offcanvas-section">
-			<i class="bi bi-circle-half me-1"></i> Toggle Theme
-		</div>
-		<div class="d-flex flex-wrap gap-1 px-3 pb-3">
-			{% for theme in themes %}
-				<button class="btn btn-sm btn-outline-secondary dd-theme-option{% if theme.group == 'standard' %} dd-theme-half{% else %} dd-theme-full{% endif %}"
-					data-theme="{{ theme.id }}">
-					<i class="{{ theme.icon }} me-1"></i> {{ theme.label }}
-				</button>
-			{% endfor %}
-		</div>
+		{% include "theme-toggle-offcanvas.njk" %}
 
-		{# --- Bootswatch CSS framework switcher --- #}
-		<div class="dd-offcanvas-divider"></div>
-		<div class="dd-offcanvas-section">
-			<i class="bi bi-palette-fill me-1"></i> Bootswatch
-		</div>
-		<button class="nav-link dd-bootswatch-option" data-theme="default">Bootstrap (Default)</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="brite">Brite</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="cerulean">Cerulean</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="cosmo">Cosmo</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="cyborg">Cyborg</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="darkly">Darkly</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="flatly">Flatly</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="journal">Journal</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="litera">Litera</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="lumen">Lumen</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="lux">Lux</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="materia">Materia</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="minty">Minty</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="morph">Morph</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="pulse">Pulse</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="quartz">Quartz</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="sandstone">Sandstone</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="simplex">Simplex</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="sketchy">Sketchy</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="slate">Slate</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="solar">Solar</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="spacelab">Spacelab</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="superhero">Superhero</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="united">United</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="vapor">Vapor</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="yeti">Yeti</button>
-		<button class="nav-link dd-bootswatch-option" data-theme="zephyr">Zephyr</button>
+		{# --- Bootswatch CSS framework switcher (dev tool, toggle in site.json) --- #}
+		{% if site.bootswatchSwitcher %}
+			{% include "bootswatch-switcher.njk" %}
+		{% endif %}
 
 	</div>
 </div>
