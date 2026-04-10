@@ -76,10 +76,13 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
 					integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
 					crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe.umd.min.js" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe-lightbox.umd.min.js" crossorigin="anonymous"></script>
 	<script src="/assets/js/dfault.js?v={{ cacheBust }}"></script>
 	<script src="/assets/js/theme-toggle.js?v={{ cacheBust }}"></script>
 	{% if site.bootswatchSwitcher %}<script src="/assets/js/bootswatch-switcher.js?v={{ cacheBust }}"></script>{% endif %}
 	<script src="/assets/js/offcanvas-init.js?v={{ cacheBust }}"></script>
+	<script src="/assets/js/photoswipe-init.js?v={{ cacheBust }}"></script>
 
 	{# --- Extra scripts (pages can override this block) --- #}
 	{% block scripts %}{% endblock %}
