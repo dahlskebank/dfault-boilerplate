@@ -1,0 +1,40 @@
+// VSCode workspace settings — applied only when this folder is open in VSCode.
+//
+// Purpose: gives every project derived from this boilerplate a subtle visual
+// identity (colored title/activity/status bars + descriptive window title) so
+// multiple open VSCode windows are distinguishable at a glance.
+//
+// In derived projects: change "peacock.color" below to a project-specific
+// color, OR install the Peacock extension (johnpapa.vscode-peacock) and run
+// "Peacock: Change to a Favorite Color" from the command palette — Peacock
+// will rewrite the colorCustomizations block automatically to match.
+{
+	// Peacock single-source-of-truth color. The boilerplate's default is a
+	// neutral slate gray so an unconfigured fork is obviously "the template".
+	"peacock.color": "#3C4F65",
+
+	// Direct VSCode color overrides. Tints only the title bar, activity bar
+	// (left-edge icons), and status bar — never the editor or syntax colors.
+	// Works even without the Peacock extension installed.
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#4f6885",
+		"activityBar.background": "#4f6885",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#c49bae",
+		"activityBarBadge.foreground": "#15202b",
+		"statusBar.background": "#3c4f65",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#4f6885",
+		"titleBar.activeBackground": "#3c4f65",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.inactiveBackground": "#3c4f6599",
+		"titleBar.inactiveForeground": "#e7e7e799",
+		"commandCenter.border": "#e7e7e799",
+		"sash.hoverBorder": "#4f6885",
+		"statusBarItem.remoteBackground": "#3c4f65",
+		"statusBarItem.remoteForeground": "#e7e7e7"
+	}
+	// `window.title` lives in the global user settings so every project's
+	// VSCode window shows its folder name in the taskbar, not just this one.
+}

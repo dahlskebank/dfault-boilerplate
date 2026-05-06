@@ -67,8 +67,8 @@
 		"links": [
 			{ "label": "Powered by dB", "url": "https://dahlskebank.com", "title": "Dahlske Bank" },
 			{ "label": "Fueled by dD", "url": "https://danieldahl.com", "title": "Daniel Dahl" },
-			{ "label": "D-Fault Pending", "url": "https://dfault.it", "title": "D-Fault Pending" },
-			{ "label": "Pinnacle of dxD", "url": "https://dxd.no", "title": "deus ex Dahl" }
+			{ "label": "Pinnacle of dxD", "url": "https://dxd.no", "title": "deus ex Dahl" },
+			{ "label": "D-Fault Pending", "url": "https://dfault.it", "title": "D-Fault Pending" }
 		]
 	}
 }

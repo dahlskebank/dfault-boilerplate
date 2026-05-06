@@ -129,10 +129,18 @@ The HTML validator runs against `_site/**/*.html` after Eleventy renders and bef
 
 ## Deployment
 
-The build output (`_site/`) is ready to deploy to any static host:
+One-command deploy via SFTP key auth + `lftp mirror --delete`. See [DEPLOY.md](DEPLOY.md) for full setup and safety notes.
 
-- **Apache** — Upload `_site/` contents. The generated `.htaccess` handles HTTPS redirect, security headers, gzip, and caching.
-- **Netlify/Vercel** — Set build command to `npm run build` and publish directory to `_site`.
+Quick version, after SSH key + `.env` are set up:
+
+```bash
+npm run deploy           # build + sync _site/ to remote
+DRY_RUN=1 ./deploy.sh _site   # preview only, no changes
+```
+
+`deploy.sh` refuses to run if `_site/index.html` is missing (catches the "empty build wipes the live site" disaster), validates env vars against an allowlist, and uses `flock` to prevent concurrent deploys from racing.
+
+For Netlify/Vercel/other hosts, set the build command to `npm run build` and the publish directory to `_site`.
 
 ## License
 

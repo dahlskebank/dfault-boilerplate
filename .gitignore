@@ -19,9 +19,19 @@ Thumbs.db
 *.swp
 *.swo
 
+# VS Code — share the Peacock theme settings, ignore everything else
+# (tasks.json/launch.json tend to accumulate machine-specific paths)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
 # Environment variables / secrets
 .env
 .env.*
+!.env.example
+
+# Deploy lock (created by flock in deploy.sh)
+.deploy.lock
 
 # Temp/scratch files
 _temp/
