@@ -80,21 +80,6 @@ module.exports = function (eleventyConfig) {
 		}
 	});
 
-	// {{ projects | sortByTitle }}
-	// Sorts an array of objects alphabetically by their `title` property.
-	eleventyConfig.addFilter("sortByTitle", (arr) => {
-		return [...arr].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
-	});
-
-	// {{ projects | uniqueTags }}
-	// Collects all unique tag names from a projects array, sorted alphabetically.
-	// Used on the projects page to generate filter buttons.
-	eleventyConfig.addFilter("uniqueTags", (projects) => {
-		const tags = new Set();
-		projects.forEach((p) => (p.tags || []).forEach((t) => tags.add(t)));
-		return [...tags].sort();
-	});
-
 	// {{ page.date | isoDate }}  →  "2026-03-22"
 	// Formats a JS Date object as an ISO date string (for sitemap.xml).
 	eleventyConfig.addFilter("isoDate", (date) => {

@@ -28,9 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Close offcanvas if viewport resizes to desktop (e.g. rotate to landscape)
-  window.addEventListener("resize", () => {
-    if (window.innerWidth >= 992 && offcanvasEl.classList.contains("show")) {
+  // Close offcanvas when crossing the desktop breakpoint (e.g. rotate to landscape).
+  // Fires once at the breakpoint crossover instead of on every pixel of resize.
+  const desktopMQ = window.matchMedia("(min-width: 992px)");
+  desktopMQ.addEventListener("change", (e) => {
+    if (e.matches && offcanvasEl.classList.contains("show")) {
       bsOffcanvas.hide();
     }
   });

@@ -68,17 +68,28 @@
 		 Provides machine-readable site info to search engines.
 		 Default: WebSite schema. Pages can override by setting jsonLd
 		 in front matter or by extending the {% block jsonld %} block. #}
+{# --- Why the "| dump | safe" pipeline here ---
+	 Nunjucks auto-escapes "'", "&", and """ into HTML entities
+	 (&#39;, &amp;, &quot;). That's correct inside HTML attributes
+	 like content="..." because the browser decodes entities there.
+	 But inside a <script type="application/ld+json"> block the
+	 contents are raw text — entities are NOT decoded. A site name
+	 like "People's Bureau" would emit the literal "People&#39;s"
+	 and search engines would read the &#39; as part of the name.
+	 "| dump" outputs proper JSON-encoded strings INCLUDING their
+	 surrounding quotes, and "| safe" stops Nunjucks from then
+	 re-escaping the output. #}
 <script type="application/ld+json">
 {
 	"@context": "https://schema.org",
 	"@type": "WebSite",
-	"name": "{{ site.name }}",
-	"url": "{{ site.url }}",
-	"description": "{{ description | default(site.description) }}",
+	"name": {{ site.name | dump | safe }},
+	"url": {{ site.url | dump | safe }},
+	"description": {{ (description or site.description) | dump | safe }},
 	"author": {
 		"@type": "Person",
-		"name": "{{ site.author.name }}",
-		"url": "{{ site.author.url }}"
+		"name": {{ site.author.name | dump | safe }},
+		"url": {{ site.author.url | dump | safe }}
 	}
 }
 </script>

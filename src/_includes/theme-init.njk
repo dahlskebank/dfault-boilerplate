@@ -1,0 +1,30 @@
+{# ============================================================
+	THEME INIT  —  src/_includes/theme-init.njk
+	============================================================
+
+	Inline script that runs synchronously in <head>, before any
+	CSS that depends on data-bs-theme. Without this, users with
+	a non-default saved theme see a flash of the wrong theme on
+	every page load (FOUC).
+
+	Must be kept in sync with theme-toggle.js — same theme IDs,
+	same HC class names, same localStorage key. This script does
+	NOT write to localStorage; theme-toggle.js handles persistence.
+	============================================================ #}
+<script>
+(function () {
+	var html = document.documentElement;
+	var hcClasses = ["high-contrast-dark", "high-contrast-light", "high-contrast-custom"];
+	var theme = localStorage.getItem("theme");
+	if (!theme) {
+		theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	}
+	hcClasses.forEach(function (c) { html.classList.remove(c); });
+	html.removeAttribute("data-bs-theme");
+	if (theme === "dark" || theme === "light") {
+		html.setAttribute("data-bs-theme", theme);
+	} else {
+		html.classList.add(theme);
+	}
+})();
+</script>

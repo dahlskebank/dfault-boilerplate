@@ -21,6 +21,7 @@
 	2.0 Layout
 		2.1 Container
 		2.2 Utility classes
+		2.3 Footer rows (mobile)
 	3.0 Header
 		3.1 Navbar brand
 		3.2 Navbar depth
@@ -56,9 +57,11 @@ body {
 }
 
 :root {
+	--bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
 	--dfault-hcd-color: #ddd;
 	--dfault-hcl-color: #ddd;
-	--dfault-hcc-color: #ff6600;
+	--dfault-hcc-color: #010080;
 }
 
 /*--------------------------------------------------------------
@@ -67,14 +70,6 @@ body {
 
 body,
 p {
-	font-family:
-		system-ui,
-		-apple-system,
-		"Segoe UI",
-		Roboto,
-		"Helvetica Neue",
-		Arial,
-		sans-serif;
 	font-weight: 400;
 }
 
@@ -84,14 +79,6 @@ h3,
 h4,
 h5,
 h6 {
-	font-family:
-		system-ui,
-		-apple-system,
-		"Segoe UI",
-		Roboto,
-		"Helvetica Neue",
-		Arial,
-		sans-serif;
 	font-weight: 700;
 }
 
@@ -120,20 +107,49 @@ footer a:not(.btn):active {
 
 /*--------------------------------------------------------------
 1.3		Scrollbar and selection
+
+	Custom scrollbar — pulled from the reservedekk.no build, adapted
+	to Bootstrap tokens so it picks up the active theme automatically.
+
+	Two layers:
+	  · Standards `scrollbar-color` / `scrollbar-width` on <html>
+	    handle Firefox and modern Chromium at every viewport size.
+	  · `::-webkit-scrollbar-*` pseudo-elements are WebKit/Blink-only
+	    and give the finer control (padding around the thumb, corner
+	    square). Desktop-only — on mobile, the OS overlay scrollbar
+	    ignores these styles anyway, and the ≥768 gate avoids any
+	    chance of the pseudo-elements reserving layout space on
+	    touch-first devices.
 --------------------------------------------------------------*/
+
+html {
+	scrollbar-color: rgba(var(--bs-primary-rgb), 0.5) var(--bs-tertiary-bg);
+	scrollbar-width: thin;
+}
 
 @media only screen and (min-width: 768px) {
 	::-webkit-scrollbar {
-		width: 10px;
+		width: 12px;
+		height: 12px;
 	}
 	::-webkit-scrollbar-track {
 		background: var(--bs-tertiary-bg);
 	}
 	::-webkit-scrollbar-thumb {
-		background: rgba(var(--bs-primary-rgb), 0.3);
+		background: rgba(var(--bs-primary-rgb), 0.5);
+		/* 3-px transparent border padded against the track — gives
+		   the thumb a cushioned look instead of filling the full
+		   channel width. `background-clip: padding-box` keeps the
+		   color from bleeding into the border area. */
+		border: 3px solid var(--bs-tertiary-bg);
+		background-clip: padding-box;
 	}
 	::-webkit-scrollbar-thumb:hover {
 		background: rgba(var(--bs-primary-rgb), 0.8);
+		background-clip: padding-box;
+	}
+	::-webkit-scrollbar-corner {
+		background: var(--bs-tertiary-bg);
 	}
 
 	::selection {
@@ -149,10 +165,6 @@ footer a:not(.btn):active {
 /*--------------------------------------------------------------
 2.1		Container
 --------------------------------------------------------------*/
-
-.cover-container .container {
-	max-width: 60rem;
-}
 
 /*--------------------------------------------------------------
 2.2		Utility classes
@@ -197,6 +209,30 @@ footer a:not(.btn):active {
 }
 
 /*--------------------------------------------------------------
+2.3		Footer rows (mobile)
+
+	The footer pairs two links around a centered separator (bi-dot
+	for the legal row, bi-slash for the brand-links row). Each pair
+	uses Bootstrap utilities for almost everything: d-grid d-sm-inline
+	align-items-center gap-2 text-end text-start.
+
+	The one missing piece is the column template — Bootstrap has
+	no utility for `1fr auto 1fr`, which is what pins the separator
+	icon to horizontal center while the two flanking links extend
+	outward from it.
+
+	Below the sm breakpoint we set that template here. At ≥ sm
+	d-sm-inline takes over (display: inline) and the grid rules
+	become inert, restoring the desktop one-line layout.
+--------------------------------------------------------------*/
+
+@media (max-width: 575.98px) {
+	.dd-footer-row {
+		grid-template-columns: 1fr auto 1fr;
+	}
+}
+
+/*--------------------------------------------------------------
 3.0		Header
 --------------------------------------------------------------*/
 
@@ -205,20 +241,11 @@ footer a:not(.btn):active {
 --------------------------------------------------------------*/
 
 .navbar-brand {
-	font-family:
-		system-ui,
-		-apple-system,
-		"Segoe UI",
-		Roboto,
-		"Helvetica Neue",
-		Arial,
-		sans-serif;
 	font-weight: 700;
 	line-height: 0;
 	padding: 0;
 	margin: 0;
 	font-size: 2rem;
-	letter-spacing: -0.01em;
 }
 
 /*--------------------------------------------------------------
@@ -234,22 +261,8 @@ footer a:not(.btn):active {
 /*--------------------------------------------------------------
 3.3		Navbar bg-warning overrides
 --------------------------------------------------------------*/
-
-.navbar.bg-warning {
-	--bs-navbar-color: #000;
-	--bs-navbar-hover-color: #fff;
-	--bs-navbar-active-color: #fff;
-	--bs-navbar-brand-color: #000;
-	--bs-navbar-brand-hover-color: #fff;
-	--bs-navbar-toggler-border-color: rgba(0, 0, 0, 0.3);
-}
-
 .navbar .navbar-brand {
 	transition: color 0.15s ease;
-}
-
-.navbar.bg-warning .navbar-toggler-icon {
-	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
 }
 
 /*--------------------------------------------------------------
@@ -280,14 +293,6 @@ footer a:not(.btn):active {
 /*--------------------------------------------------------------
 3.5		Dropdown
 --------------------------------------------------------------*/
-
-/*
-.dropdown-item.active,
-.dropdown-item:active {
-	background-color: rgba(var(--bs-primary-rgb), 0.85);
-	color: #000;
-}
-*/
 
 @media (hover: none) {
 	.tooltip {
@@ -381,9 +386,6 @@ button.nav-link.dd-bootswatch-option {
 .dd-theme-half {
 	flex: 1 1 calc(50% - 0.25rem);
 }
-.dd-theme-full {
-	flex: 1 1 100%;
-}
 
 /*--------------------------------------------------------------
 5.0		Content
@@ -468,9 +470,9 @@ section[id] {
 --------------------------------------------------------------*/
 
 .high-contrast-custom * {
-	color: var(--dfault-hcc-color) !important;
-	background-color: #111 !important;
-	border-color: var(--dfault-hcc-color) !important;
+	color: #fff !important;
+	background-color: var(--dfault-hcc-color) !important;
+	border-color: #fff !important;
 	box-shadow: none !important;
 	text-shadow: none !important;
 	border-radius: 0 !important;
@@ -481,13 +483,13 @@ section[id] {
 	text-decoration: underline !important;
 }
 .high-contrast-custom a {
-	color: var(--dfault-hcc-color) !important;
+	color: #fff !important;
 }
 .high-contrast-custom svg * {
-	fill: var(--dfault-hcc-color) !important;
+	fill: #fff !important;
 }
 .high-contrast-custom ::placeholder {
-	color: var(--dfault-hcc-color) !important;
+	color: #fff !important;
 	opacity: 0.75;
 }
 

@@ -32,8 +32,11 @@
 	 ============================================================ #}
 
 <!DOCTYPE html>
-<html lang="{{ site.lang }}" class="h-100" data-bs-theme="dark">
+<html lang="{{ site.lang }}" class="h-100">
 <head>
+	{# --- Theme init (must run before any CSS to prevent FOUC) --- #}
+	{% include "theme-init.njk" %}
+
 	{# --- SEO meta tags (title, description, Open Graph, Twitter Card) --- #}
 	{% include "head-meta.njk" %}
 
@@ -103,13 +106,6 @@
 			</div>
 		</div>
 	</div>
-	<script>
-		if (!localStorage.getItem("cookieConsent")) {
-			const t = document.getElementById("dd-cookie-toast");
-			new bootstrap.Toast(t).show();
-			t.addEventListener("hidden.bs.toast", () => localStorage.setItem("cookieConsent", "1"));
-		}
-	</script>
 
 </body>
 </html>

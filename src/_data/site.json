@@ -18,9 +18,20 @@
 	"description": "A short description of your site",
 	"lang": "en",
 
+	"_comment_version": "Footer version. Bump with `npm run bump:patch|minor|major`. The global Claude Code Stop hook reminds you if src/ changes go uncommitted without a bump.",
+	"version": "v1.1.0",
+
 	"author": {
 		"name": "Your Name",
 		"url": "https://yoursite.com"
+	},
+
+	"_comment_security": "Per RFC 9116. Contact and expires are required. Update expires before the date passes — convention is 12 months from issuance.",
+	"security": {
+		"contact": "mailto:hello@example.com",
+		"expires": "2027-05-06T00:00:00.000Z",
+		"preferredLanguages": "en, no",
+		"policy": ""
 	},
 
 	"_comment_seo": "These are used in head-meta.njk for SEO and social sharing cards.",
@@ -51,8 +62,7 @@
 		"On other projects using this boilerplate, it becomes an active link back to the hub."
 	],
 	"footer": {
-		"version": "v1.0.3",
-		"pendingLabel": "D-FAULT PENDING",
+		"pendingLabel": "D-Fault Pending",
 		"pendingUrl": "https://dfault.it",
 		"copyrightName": "Your Name",
 		"copyrightUrl": "https://yoursite.com",

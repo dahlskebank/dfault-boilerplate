@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const options = document.querySelectorAll(".dd-bootswatch-option");
 
   // Insert new stylesheets BEFORE style.css so custom styles always win
-  const customCSS = document.getElementById("dfault-css");
+  const customCSS = document.getElementById("site-css");
 
   function insertLink(link) {
     if (customCSS) {

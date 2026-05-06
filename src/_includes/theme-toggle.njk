@@ -21,7 +21,7 @@
 			{% if prevGroup and prevGroup != theme.group %}
 				<li><hr class="dropdown-divider"></li>
 			{% endif %}
-			<li><button class="dropdown-item dd-theme-option" data-theme="{{ theme.id }}"><i class="{{ theme.icon }} me-2"></i>{{ theme.label }}</button></li>
+			<li><button type="button" class="dropdown-item dd-theme-option" data-theme="{{ theme.id }}"><i class="{{ theme.icon }} me-2"></i>{{ theme.label }}</button></li>
 			{% set prevGroup = theme.group %}
 		{% endfor %}
 	</ul>

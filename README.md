@@ -10,7 +10,7 @@ A production-ready static site boilerplate built with [Eleventy 3.0](https://www
 - **5 built-in themes** — Dark, Light, and 3 High-Contrast accessibility modes
 - **SEO complete** — Open Graph, Twitter Cards, JSON-LD structured data, sitemap, robots.txt
 - **Accessibility** — Skip-to-content, ARIA labels, semantic HTML, high-contrast modes
-- **PWA ready** — Web app manifest with maskable icon support
+- **PWA installable** — Manifest + icons with maskable support (no service worker yet)
 - **Apache hardened** — .htaccess with HTTPS redirect, security headers, gzip, caching
 - **CSS/JS minification** — Post-build minification via clean-css and terser
 - **Cache busting** — Automatic `?v=timestamp` on CSS/JS assets
@@ -51,6 +51,8 @@ This is the single source of truth for your entire site. Update these values and
 | `defaultBootswatchTheme` | `"default"` for plain Bootstrap, or any Bootswatch theme name |
 | `webmanifest` | PWA app name and colors |
 | `footer` | Copyright, version, hub link |
+
+> Update `site.security.contact` and `site.security.expires` in `site.json` before going live — they ship a `/.well-known/security.txt` (RFC 9116).
 
 ### 2. Update navigation
 

@@ -77,4 +77,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		lightbox.init();
 	}
+
+	/* -------------------------------------------------------
+	 *  Cookie consent toast
+	 * -------------------------------------------------------
+	 *  Shows the toast once per browser, then sets a flag in
+	 *  localStorage so we don't pester returning visitors.
+	 * ------------------------------------------------------- */
+	if (!localStorage.getItem("cookieConsent")) {
+		const toastEl = document.getElementById("dd-cookie-toast");
+		if (toastEl && window.bootstrap) {
+			new bootstrap.Toast(toastEl).show();
+			toastEl.addEventListener("hidden.bs.toast", () => {
+				localStorage.setItem("cookieConsent", "1");
+			});
+		}
+	}
 });

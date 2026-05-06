@@ -28,7 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	const html = document.documentElement;
 	const HC_CLASSES = ["high-contrast-dark", "high-contrast-light", "high-contrast-custom"];
 
-	function applyTheme(theme) {
+	// `persist` is false when applying an OS-derived default — without it
+	// localStorage would always end up populated and the OS-change listener
+	// at the bottom would never fire.
+	function applyTheme(theme, persist = true) {
 		// Remove all high-contrast classes
 		html.classList.remove(...HC_CLASSES);
 		// Remove Bootstrap's data-bs-theme attribute
@@ -42,7 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			html.classList.add(theme);
 		}
 
-		localStorage.setItem("theme", theme);
+		if (persist) {
+			localStorage.setItem("theme", theme);
+		}
 
 		// Highlight the active option in any toggle UI
 		document.querySelectorAll(".dd-theme-option").forEach((opt) => {
@@ -64,10 +69,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Load saved theme or respect OS preference
 	const saved = localStorage.getItem("theme");
-	applyTheme(saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+	if (saved) {
+		applyTheme(saved);
+	} else {
+		applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light", false);
+	}
 
 	// Click handlers — works wherever the buttons appear (navbar, offcanvas, etc.)
 	document.querySelectorAll(".dd-theme-option").forEach((btn) => {
 		btn.addEventListener("click", () => applyTheme(btn.dataset.theme));
+	});
+
+	// Follow OS color scheme changes — but only if the user hasn't chosen a theme
+	window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+		if (!localStorage.getItem("theme")) {
+			applyTheme(e.matches ? "dark" : "light", false);
+		}
 	});
 });
