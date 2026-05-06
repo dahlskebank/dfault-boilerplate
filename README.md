@@ -120,9 +120,12 @@ src/
 ## Build Pipeline
 
 - `npm start` — Eleventy dev server with live reload and file watching
-- `npm run build` — Eleventy build + CSS/JS minification (`scripts/minify.js`)
+- `npm run build` — Eleventy → html-validate → CSS/JS minification (`scripts/minify.js`)
+- `npm run validate` — html-validate alone (no rebuild, no minify)
 
 The minifier walks `_site/assets/`, compresses `.css` with clean-css and `.js` with terser, skipping files already named `.min.*`.
+
+The HTML validator runs against `_site/**/*.html` after Eleventy renders and before minification, so any markup errors fail the build before the output gets compressed. Configuration lives in `.htmlvalidate.json`. To bypass temporarily during a migration, remove the `html-validate` step from the `build` script in `package.json`.
 
 ## Deployment
 

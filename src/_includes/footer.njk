@@ -1,4 +1,4 @@
-<footer class="mt-auto py-4 py-lg-5 border-top text-center small" role="contentinfo">
+<footer class="mt-auto py-4 py-lg-5 border-top text-center small">
 	<p class="pb-1">
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
 			<a class="text-end text-nowrap" href="/legal/#privacy-policy">Privacy Policy</a>
@@ -19,8 +19,7 @@
 		<i class="bi bi-c-circle"></i>
 		{{ site.footer.startYear }} <i class="bi bi-activity"></i> {% year %}
 		<i class="bi bi-dot"></i>
-		<a href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }} | {{ site.description }}">{{ site.footer.copyrightName }}</a>
-		<i class="bi bi-dot"></i>
+		<a href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }} | {{ site.description }}">{{ site.footer.copyrightName }}</a><span class="d-none d-lg-inline">. All rights reserved.</span>
 		{{ site.version }}
 		<br />
 
@@ -31,25 +30,20 @@
 		   four links read as one line. The bi-slash between the two spans is
 		   d-none d-sm-inline so it only joins the line on desktop.
 
-		   Pairing is hard-coded (pendingLabel + links[0], links[1] + links[2])
-		   because site.footer.links has a stable count of 3 across Daniel's sites.
-		   Add a third pair-row manually if you ever extend site.footer.links. #}
+		   Pairing is hard-coded (links[0]+[1] for row 1, links[2]+[3] for row 2)
+		   because site.footer.links has a stable count of 4. If you change that
+		   count, add or remove pair-rows manually here. #}
 
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
-			{# "Back to hub" — when pendingUrl is THIS site, render without target=_blank so it's an in-site link (the hub linking to itself). #}
-			{% if site.footer.pendingUrl == site.url %}
-			<a class="text-end text-nowrap" href="{{ site.footer.pendingUrl }}" title="{{ site.footer.pendingLabel }}">{{ site.footer.pendingLabel }}</a>
-			{% else %}
-			<a class="text-end text-nowrap" href="{{ site.footer.pendingUrl }}" target="_blank" rel="noopener" title="{{ site.footer.pendingLabel }}">{{ site.footer.pendingLabel }}</a>
-			{% endif %}
+			<a class="text-end text-nowrap" href="{{ site.footer.links[0].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[0].title }}">{{ site.footer.links[0].label }}</a>
 			<i class="bi bi-slash"></i>
-			<a class="text-start text-nowrap" href="{{ site.footer.links[0].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[0].title }}">{{ site.footer.links[0].label }}</a>
+			<a class="text-start text-nowrap" href="{{ site.footer.links[1].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[1].title }}">{{ site.footer.links[1].label }}</a>
 		</span>
 		<i class="bi bi-slash d-none d-sm-inline"></i>
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
-			<a class="text-end text-nowrap" href="{{ site.footer.links[1].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[1].title }}">{{ site.footer.links[1].label }}</a>
+			<a class="text-end text-nowrap" href="{{ site.footer.links[2].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[2].title }}">{{ site.footer.links[2].label }}</a>
 			<i class="bi bi-slash"></i>
-			<a class="text-start text-nowrap" href="{{ site.footer.links[2].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[2].title }}">{{ site.footer.links[2].label }}</a>
+			<a class="text-start text-nowrap" href="{{ site.footer.links[3].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[3].title }}">{{ site.footer.links[3].label }}</a>
 		</span>
 	</p>
 </footer>

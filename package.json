@@ -4,7 +4,8 @@
   "description": "Eleventy 3.0 + Bootstrap 5.3 boilerplate with theme switching, SEO, accessibility, and Apache hosting",
   "scripts": {
     "start": "eleventy --serve",
-    "build": "eleventy && node scripts/minify.js",
+    "build": "eleventy && html-validate \"_site/**/*.html\" && node scripts/minify.js",
+    "validate": "html-validate \"_site/**/*.html\"",
     "bump:patch": "node scripts/bump-version.js patch",
     "bump:minor": "node scripts/bump-version.js minor",
     "bump:major": "node scripts/bump-version.js major"
@@ -12,6 +13,7 @@
   "devDependencies": {
     "@11ty/eleventy": "^3.1.0",
     "clean-css": "^5.3.3",
+    "html-validate": "^10.15.0",
     "prettier": "^3.8.1",
     "terser": "^5.46.1"
   }

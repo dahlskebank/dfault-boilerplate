@@ -57,19 +57,17 @@
 	},
 
 	"_comment_footer": [
-		"Footer configuration. The 'pending' link points back to the main hub.",
-		"On the hub itself this link is auto-disabled since it would point to itself.",
-		"On other projects using this boilerplate, it becomes an active link back to the hub."
+		"Footer configuration. 'links' renders as paired rows on mobile (centered bi-slash separator) and as one inline line on desktop.",
+		"Keep the count even (currently 4) so pairs render symmetrically — see footer.njk for the pair-row markup."
 	],
 	"footer": {
-		"pendingLabel": "D-Fault Pending",
-		"pendingUrl": "https://dfault.it",
 		"copyrightName": "Your Name",
 		"copyrightUrl": "https://yoursite.com",
 		"startYear": 1984,
 		"links": [
 			{ "label": "Powered by dB", "url": "https://dahlskebank.com", "title": "Dahlske Bank" },
 			{ "label": "Fueled by dD", "url": "https://danieldahl.com", "title": "Daniel Dahl" },
+			{ "label": "D-Fault Pending", "url": "https://dfault.it", "title": "D-Fault Pending" },
 			{ "label": "Pinnacle of dxD", "url": "https://dxd.no", "title": "deus ex Dahl" }
 		]
 	}
