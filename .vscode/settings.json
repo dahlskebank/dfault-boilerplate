@@ -9,6 +9,14 @@
 // "Peacock: Change to a Favorite Color" from the command palette — Peacock
 // will rewrite the colorCustomizations block automatically to match.
 {
+	// VSCode's built-in CSS validator is OFF in this workspace because the
+	// project runs stylelint (see stylelint.config.mjs) and the Stylelint
+	// extension already reports syntax errors here — without this, a broken
+	// stylesheet is flagged twice. Built-in CSS validation stays ON in the
+	// global user settings: it is the safety net for projects that have no
+	// stylelint. Derived projects inherit this file, and the gate with it.
+	"css.validate": false,
+
 	// Peacock single-source-of-truth color. The boilerplate's default is a
 	// neutral slate gray so an unconfigured fork is obviously "the template".
 	"peacock.color": "#3C4F65",

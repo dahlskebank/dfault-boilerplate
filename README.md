@@ -120,12 +120,15 @@ src/
 ## Build Pipeline
 
 - `npm start` — Eleventy dev server with live reload and file watching
-- `npm run build` — Eleventy → html-validate → CSS/JS minification (`scripts/minify.js`)
+- `npm run build` — stylelint → Eleventy → html-validate → CSS/JS minification (`scripts/minify.js`)
 - `npm run validate` — html-validate alone (no rebuild, no minify)
+- `npm run lint:css` — stylelint alone on `src/assets/css/*.css` (no rebuild)
 
 The minifier walks `_site/assets/`, compresses `.css` with clean-css and `.js` with terser, skipping files already named `.min.*`.
 
 The HTML validator runs against `_site/**/*.html` after Eleventy renders and before minification, so any markup errors fail the build before the output gets compressed. Configuration lives in `.htmlvalidate.json`. To bypass temporarily during a migration, remove the `html-validate` step from the `build` script in `package.json`.
+
+The CSS linter runs *before* Eleventy, so a broken stylesheet fails fast: `stylelint` checks `src/assets/css/*.css` against `stylelint-config-recommended` — possible errors only (parse errors, duplicate selectors, unknown properties and units), not formatting, which is Prettier's job. A parse error fails the build instead of shipping silently. Configuration lives in `stylelint.config.mjs` (`no-descending-specificity` is off there — it false-positives on the deliberately last-ordered theme overrides); `.stylelintignore` keeps the minified `_site/` output out of it. In particular, never write `*/` inside a CSS comment — a path glob like `/order/*/` closes the comment early and silently kills every rule below it until the next `*/`.
 
 ## Deployment
 

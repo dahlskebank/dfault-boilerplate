@@ -12,7 +12,7 @@ From any terminal in the project root:
 npm run deploy
 ```
 
-Runs `npm run build` (Eleventy → html-validate → minify) and then `./deploy.sh _site`,
+Runs `npm run build` (stylelint → Eleventy → html-validate → minify) and then `./deploy.sh _site`,
 which `lftp mirror`s the build output to the remote folder, **deleting any remote
 files that no longer exist locally**.
 
