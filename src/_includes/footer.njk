@@ -7,17 +7,27 @@
 	 a link that would open the site itself in a new tab. That's what
 	 lets dfault.it, dahlskebank.com, danieldahl.com and dxd.no use the
 	 same footer without linking to themselves. The `hostname` filter
-	 lives in eleventy.config.js. #}
-{%- set selfHost = site.url | hostname | replace("www.", "") -%}
+	 lives in eleventy.config.js. `r/^www\./` is a Nunjucks regular
+	 expression literal, anchored to the START of the string: a plain
+	 replace("www.", "") removes every occurrence, so awww.no became ano.
+	 The guard is skipped while site.url is still empty (both hostnames
+	 would be "" and every link would turn into plain text). #}
+{%- set selfHost = site.url | hostname | replace(r/^www\./, "") -%}
 {%- macro footerLink(link, align) -%}
-{%- if (link.url | hostname | replace("www.", "")) == selfHost -%}
+{%- if selfHost and (link.url | hostname | replace(r/^www\./, "")) == selfHost -%}
 <span class="{{ align }} text-nowrap" title="{{ link.title }}">{{ link.label }}</span>
 {%- else -%}
 <a class="{{ align }} text-nowrap" href="{{ link.url }}" target="_blank" rel="noopener" title="{{ link.title }}">{{ link.label }}</a>
 {%- endif -%}
 {%- endmacro -%}
 
-<footer class="mt-auto py-4 py-lg-5 border-top text-center small">
+{# The separator line above the footer is drawn by .dd-footer-inner
+	 (style.css §2.4), not by a border on <footer>: it hugs the footer
+	 text (+10%) instead of spanning the whole container. So the top
+	 padding lives on the wrapper (pt-*), below the line, and <footer>
+	 only keeps its bottom padding (pb-*). #}
+<footer class="mt-auto pb-4 pb-lg-5 text-center small">
+	<div class="dd-footer-inner pt-4 pt-lg-5">
 	{# Separator icons (bi-dot / bi-slash / bi-arrow) are decorative:
 	   aria-hidden="true" keeps screen readers from reading the icon-font
 	   glyphs. Where an icon carries meaning (©, the year range) a
@@ -76,4 +86,5 @@
 		{%- endif %}
 		{%- endfor %}
 	</p>
+	</div>
 </footer>

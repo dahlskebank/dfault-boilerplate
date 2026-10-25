@@ -15,6 +15,12 @@
 # later, try a Nunjucks/Jinja-aware plugin on a branch first.
 *.njk
 
+# Markdown. Prettier re-indents list content (3 → 4 spaces with our
+# tabWidth), turns *italic* into _italic_ and re-pads every table on
+# save, which turned a one-line README edit into an 84-line diff.
+# Our .md files (README, CLAUDE.md, docs/) are hand-formatted.
+*.md
+
 # Kept exactly as delivered: design exports, third-party reference
 # docs, and archived snapshots of old code.
 docs/design/

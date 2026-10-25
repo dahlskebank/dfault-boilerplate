@@ -2,7 +2,7 @@
 layout: base.njk
 title: Showcase
 description: "A sample Bootstrap 5 page: a hero section and a preview of the site's share image."
-mainClass: pb-5 mt-4
+mainClass: pb-5 mt-0 mt-md-4
 ---
 
 {# Bootstrap 5.3 "Responsive left-aligned hero with image" example,
@@ -29,9 +29,12 @@ mainClass: pb-5 mt-4
    jump); img-fluid still scales it down. No loading="lazy" — this image
    is above the fold (on mobile it comes first), and lazy-loading the
    biggest visible image delays the page's main paint (LCP).
-   fetchpriority="high" asks the browser to fetch it early. #}
+   fetchpriority="high" asks the browser to fetch it early.
+   mb-5 only: the space above comes from <main>'s mt-0 mt-md-4 (front
+   matter: no margin below md, 1.5rem from md up), the same as the
+   about and legal pages. #}
 
-<div class="my-5 p-4 p-lg-5 rounded-3 border shadow-lg">
+<div class="mb-5 p-4 p-lg-5 rounded-3 border shadow-lg">
 	<div class="row flex-lg-row-reverse align-items-center gx-5 gy-4">
 		<div class="col-10 col-sm-8 col-lg-6">
 			<img src="/assets/img/dfault-boilerplate-v1.jpg" class="d-block mx-lg-auto img-fluid rounded-3 shadow-lg" alt="Illustration of rolling dunes at dusk, traced with glowing blue lines" width="850" height="720" fetchpriority="high">

@@ -40,7 +40,7 @@ There is one way to start a site: **clone, then detach.** A clone brings only wh
 6. **CLAUDE.md:** rewrite the `## This project` block for the new site and delete its marker line. Keep the rest.
 7. **Deploy config:** copy `.env.example` to `.env` and fill it in (see [docs/deploy.md](docs/deploy.md#setup-checklist-for-a-new-project-derived-from-this-boilerplate)).
 8. **Local Apache (Daniel: Laragon):** add a vhost whose DocumentRoot is the new project's `_site/`, and a hosts-file line for the domain. Then `npm run watch` and open the site at that domain.
-9. **Replace the placeholder content:** the [favicon set and share image](#favicons-and-share-image), the legal text in `src/legal.njk` (then delete its `robots:` line and set `legalPlaceholder: false`), and the home, about and showcase copy.
+9. **Replace the placeholder content:** the [favicon set and share image](#favicons-and-share-image), the legal text in `src/legal.njk` (then set `legalPlaceholder: false`, which also lifts its noindex), and the home, about and showcase copy.
 10. **First commit** of the new site. From here on, bump versions with `npm run bump:patch|minor|major`.
 
 **Don't copy `.claude/`** from the boilerplate or from another project. Its `settings.local.json` holds approvals granted once for unrelated tasks (`npm run *`, for example, which includes `npm run deploy`). Let each project collect its own. A clone never brings it, because `.claude/` is gitignored.
@@ -49,7 +49,7 @@ There is one way to start a site: **clone, then detach.** A clone brings only wh
 
 - **Eleventy 3** — Fast static site generator with Nunjucks templates
 - **Bootstrap 5.3.8 + Bootstrap Icons 1.13.1** — loaded from jsDelivr with SRI. Versions, URLs and hashes live in one file, `src/_data/cdn.js`
-- **26 Bootswatch themes** — a dev-tool switcher in a collapsible list in the offcanvas menu, generated from `cdn.js`. The saved theme is applied before first paint. Dark-only themes (cyborg, darkly, quartz, slate, solar, superhero, vapor) lock the colour mode to dark
+- **26 Bootswatch themes** — a dev-tool switcher in a collapsible list in the offcanvas menu, generated from `cdn.js`. The saved theme is applied before first paint. Light, Dark and Auto work on every theme, like the toggle on bootswatch.com; on themes designed dark (cyborg, darkly, quartz, slate, solar, superhero, vapor) Light is the designed look and Dark the theme's alternative dark palette
 - **Theme picker** — Dark, Light, Auto (follows the OS) and 3 high-contrast modes, as toggle buttons with `aria-pressed`. The choice is saved in localStorage and applied before any CSS loads, so nothing flashes
 - **Flat mode** — square corners and no shadows, with its own focus ring (`flatToggle` switch)
 - **SEO** — title and description, canonical, Open Graph, X card, one JSON-LD `@graph` per page (Person, WebSite, the page node, BlogPosting, BreadcrumbList), sitemap.xml with git-based `<lastmod>`, robots.txt, security.txt, humans.txt
@@ -118,7 +118,7 @@ Run `npm run build` before a deploy, or whenever you want every check at once. I
 
 **Reference checker** (`scripts/check-refs.js`): every local `href`, `src`, `srcset` and `poster`, every URL on `site.url` (canonical, og:image, JSON-LD, sitemap, robots.txt, security.txt, llms.txt), CSS `url()` and `@import`, the webmanifest icons and the `.htaccess` ErrorDocument targets must point at a file in `_site/` with exactly the same upper/lower case. Windows doesn't care about case; the Linux web host does. The webmanifest must also be valid JSON. Paths that exist only on the server go in `IGNORE_PREFIXES` at the top of the script.
 
-The minifier walks `_site/assets/`, compresses `.css` with clean-css and `.js` with terser, skipping files already named `.min.*`. A file with `import`/`export` or top-level `await` is retried in terser's ES-module mode.
+The minifier walks `_site/assets/`, compresses `.css` with clean-css and `.js` / `.mjs` with terser, skipping files already named `.min.*`. A file with `import`/`export` or top-level `await` is retried in terser's ES-module mode.
 
 **JS bundling:** the site-wide scripts stay as separate source files in `src/assets/js/`, but every build concatenates them into a single `_site/assets/js/bundle.js` — one HTTP request per page. The list of bundled files is `SITE_WIDE_JS` at the top of `eleventy.config.js`; to add a site-wide script, add one line there (some entries are bundled only while a site.json switch is on). The files share one scope once glued together, so bundled scripts read and write localStorage through `window.ddStore`, which never throws, and change the theme through `window.ddTheme` (both from `theme-init.njk`). Page-specific scripts loaded via `extraScripts:` frontmatter are not bundled.
 
@@ -128,9 +128,9 @@ The HTML validator runs against `_site/**/*.html` after Eleventy renders and bef
 
 The CSS linter runs *before* Eleventy, so a broken stylesheet fails fast: `stylelint` checks `src/assets/css/*.css` against `stylelint-config-recommended` — possible errors only (parse errors, duplicate selectors, unknown properties and units), not formatting, which is Prettier's job. A parse error fails the build instead of shipping silently. Configuration lives in `stylelint.config.mjs` (`no-descending-specificity` is off there — it false-positives on the deliberately last-ordered theme overrides); `.stylelintignore` keeps the minified `_site/` output (and `_temp/`, `docs/`, `archive/`) out of it. In particular, never write `*/` inside a CSS comment — a path glob like `/order/*/` closes the comment early and silently kills every rule below it until the next `*/`.
 
-**Prettier** never formats `.njk` files (`.prettierignore`): many of them aren't HTML at all (`.htaccess`, robots.txt), and the HTML parser would wreck them. It uses tabs, width 4, like `.editorconfig`.
+**Prettier** never formats `.njk` files (`.prettierignore`): many of them aren't HTML at all (`.htaccess`, robots.txt), and the HTML parser would wreck them. It skips `.md` files too: README, CLAUDE.md and `docs/` are hand-formatted, and Prettier would re-indent lists, turn `*italic*` into `_italic_` and re-pad every table (`.vscode/settings.json` also turns Markdown format-on-save off). It uses tabs, width 4, like `.editorconfig`.
 
-**Notes inside `src/`:** Eleventy builds and publishes almost everything in `src/`. Folders starting with `_` are NOT skipped by default (that's a Jekyll rule). As a safety net, `eleventy.config.js` ignores `src/**/_temp/**`, `src/**/_tmp/**`, `src/**/_notes/**` and `src/**/README.md`, and README.md files are not copied out of `src/assets/`. But scratch, plans and notes belong in `/_temp` and `/docs` at the project root (see "Where files go" in CLAUDE.md).
+**Notes inside `src/`:** Eleventy builds and publishes almost everything in `src/`. Folders starting with `_` are NOT skipped by default (that's a Jekyll rule). As a safety net, `eleventy.config.js` ignores `src/**/_temp/**`, `src/**/_tmp/**`, `src/**/_notes/**` and `src/**/README.md`, and neither README.md files nor anything whose name starts with `_` (a folder like `img/_originals/`, a file like `_notes.txt`) is copied out of `src/assets/`. But scratch, plans and notes belong in `/_temp` and `/docs` at the project root (see "Where files go" in CLAUDE.md).
 
 ## Customization
 
@@ -205,7 +205,7 @@ Create new `.njk` files in `src/`. Use this template:
 layout: base.njk
 title: My New Page
 description: One sentence for search results and share cards.
-mainClass: pb-5 mt-4
+mainClass: pb-5 mt-0 mt-md-4
 ---
 
 <h1>My New Page</h1>
@@ -216,7 +216,7 @@ Don't forget to add the page to `src/_data/nav.js` for navigation.
 
 Optional front matter, documented at the top of the file that reads it:
 
-- **Layout** (`src/_includes/base.njk`): `bodyClass` (default `d-flex h-100`), `mainClass` (default none), `containerClass` (default `container`), `cover: true` (content centred vertically between navbar and footer, used by the home page; good for splash pages like 404/403), `extraCss`, `extraScripts`, `gallery: true` (load PhotoSwipe).
+- **Layout** (`src/_includes/base.njk`): `bodyClass` (default `d-flex flex-column`; a page's value replaces the default, so keep those two classes if the footer should still sit at the bottom of short pages), `mainClass` (default none), `containerClass` (default `container`), `cover: true` (content centred vertically between navbar and footer, used by the home page; good for splash pages like 404/403), `extraCss`, `extraScripts`, `gallery: true` (load PhotoSwipe).
 - **Meta and structured data** (`src/_includes/head-meta.njk`): `title`, `description`, `robots`, `locale`, `ogImage` + `ogImageAlt` / `ogImageWidth` / `ogImageHeight` / `ogImageType`, `ogType: article` (blog post; set `date:` too), `schemaType` (e.g. `ProfilePage`), `lastmod` (a quoted date), `jsonLd` (extra schema.org nodes), `breadcrumbSchema: false`.
 - **llms.txt:** `llms: false` leaves the page out.
 
@@ -240,7 +240,7 @@ The boilerplate ships a working placeholder set (a dfault floppy disk). Replace 
 
 Edit `src/assets/css/style.css`. The file is organized in numbered sections with a table of contents at the top. Where Bootstrap exposes a component token (`--bs-navbar-*`, `--bs-btn-*` …) it sets the token, not the property, so Bootswatch themes keep working. Hooks you can use in pages:
 
-- `--dd-navbar-offset`: one value for the body padding under the fixed navbar, `scroll-padding-top` and the cheatsheet's sticky TOC. Change it here if the navbar gets taller.
+- `--dd-navbar-offset`: clearance for things outside the page flow — `scroll-padding-top` (anchor jumps) and the cheatsheet's sticky TOC. The navbar itself is `sticky-top`, so page content needs no offset; 5rem covers the tallest Bootswatch navbar (Lux).
 - `.dd-prose`: a 70ch reading column (add `mx-auto` to centre it).
 - `.dd-btn-ghost`: a quiet outline button driven by theme tokens (use with `.btn`).
 - `.dd-skip-link`, `.dd-copy-tip`: the skip link and the copy-button feedback tooltips.
@@ -257,13 +257,13 @@ Buttons: `btn-primary` / `btn-outline-primary` for main actions, `btn-success` o
 curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A
 ```
 
-Prefix the result with `sha384-`. Bootstrap and Bootswatch must stay on the same version and change together. After a Bootswatch bump, also re-check the two name lists in `cdn.js`: `darkOnly` (themes that lock dark mode) and `noGoogleFonts` (themes whose CSS doesn't `@import` Google Fonts; legal.njk's Google Fonts disclosure reads it).
+Prefix the result with `sha384-`. Bootstrap and Bootswatch must stay on the same version and change together. After a Bootswatch bump, also re-check the two name lists in `cdn.js`: `darkPalette` (themes designed dark; the print styles read it) and `noGoogleFonts` (themes whose CSS doesn't `@import` Google Fonts; legal.njk's Google Fonts disclosure reads it).
 
 ### Cookie toast and legal page
 
 The toast's copy depends on `site.gaId` and `gaConsent` and says what the site really does: no cookies of its own, the theme choice saved in localStorage, files from public CDNs. Keep it (base.njk) in sync with `src/legal.njk`, whose Cookie Policy and "Third-party services" sections are generated from site.json (`gaId`, `gaConsent`, `flatToggle`, `bootswatchSwitcher`, `defaultBootswatchTheme`, `googleFontsUrl`) and from `bootswatch.noGoogleFonts` in `cdn.js` (jsDelivr, cdnjs, Google Fonts, GA, host logs). Any element with `data-dd-cookie-settings` re-opens the toast; with `gaConsent: "required"` the Cookie Policy shows one ("Change my cookie choice").
 
-`legal.njk` ships with `robots: "noindex, follow"` and `legalPlaceholder: true`, which shows a reminder box under `eleventy --watch` only. Once the text is real (or the satire is kept on purpose), delete the `robots` line and set `legalPlaceholder` to `false`.
+`legal.njk` ships with `legalPlaceholder: true`. While it is set, the page is noindex (and out of sitemap.xml and llms.txt; `robots` follows the switch through `eleventyComputed` in its front matter), a reminder box shows under `eleventy --watch` only, and the built page carries an HTML comment that `deploy.sh` and `deploy:batch` refuse to upload. Once the text is real (or the satire is kept on purpose), set it to `false`.
 
 localStorage keys the site uses: `theme`, `flat`, `bootswatchTheme`, `cookieConsent`, and `analyticsConsent` (only with `gaConsent: "required"`).
 
@@ -290,7 +290,7 @@ localStorage keys the site uses: `theme`, `flat`, `bootswatchTheme`, `cookieCons
 │   ├── clean.js            npm run clean
 │   ├── deploy-batch.mjs    npm run deploy:batch (additive sftp batch)
 │   ├── minify.js           last step of npm run build
-│   └── site-data.js        reads site.json for eleventy.config.js and check-refs.js
+│   └── site-data.js        reads site.json (or site.js) for eleventy.config.js, check-refs.js and both deploy paths
 ├── docs/                   docs written to be read later (pushed with the repo)
 │   └── deploy.md           deploy setup, safety notes, troubleshooting
 ├── _temp/                  disposable scratch (ignored, except _temp/README.md)
@@ -307,7 +307,7 @@ src/
 │   ├── themes.js           Theme list (dark/light/auto/HC), the one source for the pickers
 │   ├── cdn.js              CDN versions, URLs and SRI hashes
 │   ├── aiBots.js           AI crawler names for robots.txt
-│   └── build.js            Build-time values (security.txt Expires)
+│   └── build.js            Build-time values (the ?v= cache-bust stamp, security.txt Expires)
 ├── _includes/              Layouts and partials (never built as pages)
 │   ├── base.njk            Master layout (wraps all pages)
 │   ├── head-meta.njk       SEO, Open Graph and JSON-LD
@@ -392,11 +392,11 @@ Before lftp runs (dry-runs included), `deploy.sh` refuses:
 - a `site.json` `url` that is still `example.com`;
 - a `DEPLOY_REMOTE` whose last folder is neither the site's host nor its first label (`/…/mysite.no` for `https://mysite.no`, `/…/app` for `https://app.example.com`). Override with `DEPLOY_ALLOW_PATH_MISMATCH=1` in `.env` when the docroot really has another name;
 - a `DEPLOY_REMOTE` with a trailing `/`, `//`, `~`, `.` or `..`, or an absolute path fewer than 3 folders deep (an account root, not a site folder);
-- built files that still hold template values: `example.com` / `yoursite.com` in robots.txt or security.txt, a security.txt `Expires` under 30 days away, or `Your Name` / `yoursite.com` on the home page ([details](docs/deploy.md#target-checks)).
+- built files that still hold template values: `example.com` / `yoursite.com` in robots.txt or security.txt, a security.txt `Expires` under 30 days away, `footer.copyrightName` / `copyrightUrl` still the template values in `site.json`, or the legal page still marked `legalPlaceholder: true` ([details](docs/deploy.md#target-checks)).
 
 `.env` may only hold the six `DEPLOY_*` keys from `.env.example`; any other line is skipped with a warning. Files on the `EXCLUDES` list in `deploy.sh` (`.htpasswd*`, `google*.html`, `BingSiteAuth.xml`, `.well-known/acme-challenge/*`) are neither uploaded nor deleted. The concurrency guard only works where `flock` exists (Linux, WSL); Git for Windows doesn't ship it, so in Git Bash the guard is skipped.
 
-In a shell without a terminal (Claude Code's, for one) lftp hangs. There, `npm run deploy:batch` writes an **additive** sftp batch to `_temp/deploy/deploy.batch` (it never deletes) from the same exclude list. Use it only when the script exits 0 and prints `leak? clean`, and run the printed `sftp` command from the project root.
+In a shell without a terminal (Claude Code's, for one) lftp hangs. There, `npm run deploy:batch` writes an **additive** sftp batch to `_temp/deploy/deploy.batch` (it never deletes) from the same exclude list. Use it only when the script exits 0 and prints `leak check: clean`, and run the printed `sftp` command from the project root.
 
 ### Other hosts (Netlify, Vercel, CI)
 

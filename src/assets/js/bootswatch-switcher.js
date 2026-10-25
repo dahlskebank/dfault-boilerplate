@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       latest = null;
       document.querySelectorAll("link[data-dd-retired]").forEach((old) => old.remove());
       store.set("bootswatchTheme", theme);
-      // Dark-only themes (Darkly, Vapor, …) force dark mode: theme-init.njk.
+      // Tells theme-init.njk whether the new theme is designed dark (print styles).
       if (window.ddTheme) window.ddTheme.setBootswatch(theme);
     });
 

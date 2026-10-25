@@ -53,11 +53,14 @@
 2.0  Focus indicator
 
 A solid 2px outline replaces the box-shadow rings removed above.
---bs-emphasis-color = black in light mode (21:1 on white), white in
-dark mode (15.43:1 on #212529) — and white inside the navbar too,
-because the navbar carries its own data-bs-theme="dark" (4.50:1 on
-bg-primary). :focus-visible = keyboard focus (and any focused text
-field), so mouse clicks on buttons don't draw it.
+On the page it's --bs-body-color, the one colour every theme sets
+against its own background (style.css 4.2 explains why): it was
+--bs-emphasis-color, which Bootswatch's dark designed themes (Cyborg,
+Vapor …) leave at #000 in Light mode, so the ring vanished on their
+near-black page. Inside the navbar it stays --bs-emphasis-color: the
+navbar carries its own data-bs-theme="dark", where that is white
+(4.50:1 on bg-primary). :focus-visible = keyboard focus (and any
+focused text field), so mouse clicks on buttons don't draw it.
 
 .flat :focus-visible (0,2,0) ties with Bootstrap's own
 `.btn:focus-visible { outline: 0 }`-style rules and wins because
@@ -70,8 +73,12 @@ be drawn on the label button right after it.
 
 .flat :focus-visible,
 .flat .btn-check:focus-visible + .btn {
-	outline: 2px solid var(--bs-emphasis-color);
+	outline: 2px solid var(--bs-body-color);
 	outline-offset: 2px;
+}
+
+.flat .navbar :focus-visible {
+	outline-color: var(--bs-emphasis-color);
 }
 
 /*--------------------------------------------------------------

@@ -125,18 +125,18 @@ document.addEventListener("DOMContentLoaded", () => {
  *  High-contrast modes have no data-bs-theme and keep their own
  *  print fallback (high-contrast.css §15.0), so they're skipped.
  *
- *  Dark-only Bootswatch themes (window.ddTheme.darkOnly, see
+ *  Bootswatch themes designed dark (window.ddTheme.darkPalette, see
  *  theme-init.njk) are skipped too: there "light" still selects
- *  the theme's DARK default palette (Darkly prints white text on
- *  white paper), so they're left to the print tokens in
- *  style.css §9.0, which do win over the theme's dark block.
+ *  the theme's DARK designed palette (Darkly would print white text
+ *  on white paper), so they're left to the print tokens in
+ *  style.css §9.0, which cover both of their modes.
  * ------------------------------------------------------- */
 (function () {
 	const html = document.documentElement;
 	let restoreTheme = null;
 
 	window.addEventListener("beforeprint", () => {
-		if (html.getAttribute("data-bs-theme") === "dark" && !(window.ddTheme && window.ddTheme.darkOnly)) {
+		if (html.getAttribute("data-bs-theme") === "dark" && !(window.ddTheme && window.ddTheme.darkPalette)) {
 			restoreTheme = "dark";
 			html.setAttribute("data-bs-theme", "light");
 		}

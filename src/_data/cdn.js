@@ -9,7 +9,7 @@
 //   bootstrapIcons → css
 //   photoswipe     → css, js (core UMD), lightboxJs (lightbox UMD)
 //   bootswatch     → themes: { brite: { url, integrity }, … }   (26 themes)
-//                    darkOnly: [ "cyborg", … ]  (plain list of names, not assets)
+//                    darkPalette: [ "cyborg", … ]  (plain list of names, not assets)
 //                    noGoogleFonts: [ "brite", … ]  (ditto)
 //
 // WHY SRI ("integrity"): the browser hashes the downloaded file and refuses
@@ -64,21 +64,41 @@ const bootswatchSri = {
 	zephyr: "sha384-0qFVRx98HJem0F2omOB5o37vVaRuuesFrDqe5Q292oSriOauZU47Cz7anAMHnYnf",
 };
 
-// Bootswatch themes with a DARK default palette (body background #222,
-// #002b36, … even under data-bs-theme="light"). Bootstrap's Light/Dark switch
-// only mixes palettes on them, so theme-init.njk forces data-bs-theme="dark"
-// while one is active and theme-toggle.js disables Light/Auto (high contrast
-// stays available). Checked 2026-10-25 against the 5.3.8 files: these 7 are
-// the only themes whose default --bs-body-bg is dark.
-// TRADE-OFF: forced dark applies the theme's [data-bs-theme=dark] block, which
-// is Bootswatch's generic dark palette, not the theme's own designed :root one.
-// Darkly, Slate and Solar keep their background (only the text becomes
-// #dee2e6), but Cyborg (#060606 → #212529), Superhero (#0f2537 → #212529) and
-// Quartz (purple #686dc3 → #212529) lose their background, and Vapor its #32fbe2
-// text. So those look different from their bootswatch.com preview. Showing the designed
-// palette instead would mean REMOVING data-bs-theme for them (theme-init.njk
-// apply()), which also drops Bootstrap's own dark-mode rules (.btn-close etc.).
-const bootswatchDarkOnly = ["cyborg", "darkly", "quartz", "slate", "solar", "superhero", "vapor"];
+// Bootswatch themes whose DESIGNED palette is dark. Every Bootswatch theme ships
+// two palettes: `:root,[data-bs-theme=light] { … }` (the designed one) and
+// `[data-bs-theme=dark] { … }`. On these 7 the designed one is dark too —
+// Cyborg #060606, Quartz purple #686dc3, Vapor #1a0933, Darkly #222 … — so
+// "Light" shows the theme as designed and "Dark" shows its [data-bs-theme=dark]
+// block (mostly Bootstrap's generic #212529). That is exactly what the colour
+// toggle on bootswatch.com does, and the theme picker here behaves the same:
+// Light, Dark and Auto work on every theme. Checked 2026-10-25 against the
+// 5.3.8 files: these 7 are the only themes whose designed --bs-body-bg is dark.
+//
+// The list is used for PRINTING only. theme-init.njk puts
+// data-dd-dark-palette on <html> while one of these is active, so style.css
+// §9.0 can print it as dark text on white even in Light mode (Chrome doesn't
+// print backgrounds, so the designed light text would land on white paper).
+//
+// KNOWN GAP, on purpose (decided 2026-10-25): in their Light mode these 7
+// themes leave --bs-emphasis-color (#000), the *-text-emphasis, *-subtle,
+// --bs-tertiary-bg and --bs-border-color tokens at the values Bootstrap
+// computed for a WHITE page. The boilerplate's own colour-bearing UI avoids
+// them: menu links, ghost buttons, focus rings (incl. flat.css), selection,
+// scrollbar track and cheatsheet TOC are built from --bs-body-color /
+// --bs-body-bg only (style.css 4.2). Its hairlines (footer line, offcanvas
+// border, dividers) still use --bs-border-color, which comes out as a light
+// #dee2e6 line on these themes: visible, just brighter than designed.
+// Bootstrap's own components that read these tokens (alerts, list groups,
+// subtle badges …) look wrong on these themes in Light mode. The fix is to re-point those tokens
+// under :root[data-dd-dark-palette][data-bs-theme="light"] — deliberately
+// NOT done here (maintenance per Bootswatch release). Do it in the site that
+// actually uses one of these themes.
+//
+// (Until 2026-10-25 this list also LOCKED these themes to Dark and disabled
+// Light/Auto. That lock wrongly assumed the designed palette needs no
+// data-bs-theme at all; it actually swapped Cyborg, Quartz, Superhero and
+// Vapor to the generic dark palette.)
+const bootswatchDarkPalette = ["cyborg", "darkly", "quartz", "slate", "solar", "superhero", "vapor"];
 
 // Bootswatch themes whose CSS does NOT @import Google Fonts. Every other theme
 // loads its fonts from fonts.googleapis.com, i.e. sends the visitor's IP to
@@ -126,7 +146,7 @@ module.exports = {
 
 	bootswatch: {
 		version: BOOTSWATCH,
-		darkOnly: bootswatchDarkOnly,
+		darkPalette: bootswatchDarkPalette,
 		noGoogleFonts: bootswatchNoGoogleFonts,
 		// { brite: { url, integrity }, cerulean: { … }, … } built from the hash list above.
 		themes: Object.fromEntries(

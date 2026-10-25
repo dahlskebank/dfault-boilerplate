@@ -32,7 +32,7 @@ const SITE_DIR = path.join(OUT_DIR, "assets");
 
 // Per-build cache-bust token for relative ES-module imports (ported from the
 // fg project). .htaccess caches JS for a year, and the entry
-// <script src="…?v={{ cacheBust }}"> gets a new URL on every build, but the
+// <script src="…?v={{ build.cacheBust }}"> gets a new URL on every build, but the
 // files it IMPORTS (`import "./x.js"`) did not: after a change to an imported
 // module, a returning visitor kept the old copy for up to a year. A new value
 // each build means every module import is fetched fresh after a deploy.
@@ -53,14 +53,19 @@ function versionImports(code, ver) {
   );
 }
 
-function walk(dir, ext) {
+// Files under `dir` whose name matches `re`, skipping anything already
+// minified (*.min.css, *.min.js, *.min.mjs). A regex rather than a plain
+// extension string so .js AND .mjs page modules are both picked up: matching
+// endsWith(".js") silently skipped every .mjs file, which then shipped
+// unminified and without the import versioning below.
+function walk(dir, re) {
   let results = [];
   if (!fs.existsSync(dir)) return results;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      results = results.concat(walk(full, ext));
-    } else if (entry.name.endsWith(ext) && !entry.name.endsWith(".min" + ext)) {
+      results = results.concat(walk(full, re));
+    } else if (re.test(entry.name) && !/\.min\.[a-z]+$/i.test(entry.name)) {
       results.push(full);
     }
   }
@@ -79,7 +84,7 @@ async function run() {
   let failed = false;
 
   // Minify CSS
-  for (const file of walk(SITE_DIR, ".css")) {
+  for (const file of walk(SITE_DIR, /\.css$/i)) {
     const src = fs.readFileSync(file, "utf8");
     const result = new CleanCSS({ level: 1 }).minify(src);
     // clean-css reports most problems (e.g. "Missing '}'") as warnings, not
@@ -118,7 +123,7 @@ async function run() {
   // e.g. an `extraScripts: [{ src, type: "module" }]` page script). A module
   // minified as a script is merely less compact; a script minified as a
   // module is broken. `ecma: 2020` keeps modern syntax (??, ?.) as-is.
-  for (const file of walk(SITE_DIR, ".js")) {
+  for (const file of walk(SITE_DIR, /\.m?js$/i)) {
     const src = fs.readFileSync(file, "utf8");
     let result;
     try {

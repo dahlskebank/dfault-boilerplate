@@ -40,7 +40,7 @@ repo (README.md → "Starting a new site"). Fixes made in a derived site are por
   Own classes and hooks start with `dd-`.
 - `src/_data/site.json` is the one config file. A new switch gets a `_comment_<key>` beside it and a row in the README.
 - Site-wide JS: one line in `SITE_WIDE_JS` (eleventy.config.js). Bundled scripts use `window.ddStore`, not `localStorage`.
-- Tabs for indentation (.editorconfig). Prettier never formats `.njk` (many aren't HTML: `.htaccess`, robots.txt).
+- Tabs for indentation (.editorconfig). Prettier never formats `.njk` (many aren't HTML: `.htaccess`, robots.txt) or `.md` (hand-formatted); both are in `.prettierignore`.
 
 ## Where files go
 

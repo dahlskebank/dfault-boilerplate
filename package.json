@@ -1,6 +1,6 @@
 {
   "name": "eleventy-bootstrap-boilerplate",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Eleventy 3 + Bootstrap 5.3 boilerplate with theme switching, SEO, accessibility, and Apache hosting",
   "engines": {

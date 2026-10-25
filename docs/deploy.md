@@ -77,7 +77,7 @@ you removed from the build stays on the server until the next real
   [Target checks](#target-checks)): an additive upload can't delete, but it
   can still overwrite another site's `index.html`.
 - It leak-checks the finished batch before writing it. **Only use the batch
-  when the script exits 0 and prints `leak? clean`.** On any failure it writes
+  when the script exits 0 and prints `leak check: clean`.** On any failure it writes
   nothing, and it removes the batch from an earlier run first.
 - It lists any file that exists in `_site/` but is excluded and therefore NOT
   uploaded (see the `google*.html` note below).
@@ -106,7 +106,7 @@ edit or commit it.
 | `DEPLOY_HOST` | yes | SFTP host, e.g. `login.domeneshop.no`. |
 | `DEPLOY_USER` | yes | SFTP username. |
 | `DEPLOY_REMOTE` | yes | The site's folder on the server, e.g. `/home/N/x/user/yourdomain.tld`. No trailing slash, no `~`, `.` or `..`. |
-| `DEPLOY_KEY` | no | Private key path in Git Bash form, e.g. `/e/www/your_key`. Default `~/.ssh/id_ed25519`. |
+| `DEPLOY_KEY` | no | Private key path in Git Bash form, e.g. `/e/www/your_key`. Default `~/.ssh/id_ed25519`. ASCII letters (no æ/ø/å), digits, space and `. _ / ~ : -` only. That applies to the default path too: with other characters in the Windows user folder, put the key under a plain path and set `DEPLOY_KEY`. |
 | `DEPLOY_ALLOW_PATH_MISMATCH` | no | `1` = allow a `DEPLOY_REMOTE` whose last folder isn't named after the domain. See [Target checks](#target-checks). |
 | `DEPLOY_STRICT_HOSTKEY` | no | `1` = only connect when the host key is already in `known_hosts`. See [Host key](#host-key). |
 
@@ -124,8 +124,9 @@ ssh-keygen -t ed25519 -C "your@email"
 ```
 
 Default location: `~/.ssh/id_ed25519`. If you save it somewhere else (e.g.
-`/e/www/your_key`), set `DEPLOY_KEY` in `.env` to that path. **Avoid spaces in
-the path** — they break the embedded ssh command in `deploy.sh`. Keep the
+`/e/www/your_key`), set `DEPLOY_KEY` in `.env` to that path. Spaces in the
+path are fine (it is quoted wherever it is used); other unusual characters are
+rejected by an allowlist, like the other `.env` values. Keep the
 passphrase empty (or load the key into ssh-agent): the deploy runs ssh with
 `BatchMode=yes`, which never asks for a passphrase or password.
 
@@ -245,8 +246,12 @@ refuses when:
   `yoursite.com` (`site.json` `url`, `security.contact`);
 - security.txt's `Expires:` is less than 30 days away or has passed (an expired
   security.txt is invalid);
-- the home page still says `Your Name` or `yoursite.com` (`site.json`
-  `footer.copyrightName` / `copyrightUrl`).
+- `site.json` still has `footer.copyrightName: "Your Name"` or a
+  `yoursite.com` `copyrightUrl` (read from `site.json` itself, so a contact
+  form labelled "Your Name" on the home page doesn't count);
+- `legal/index.html` still carries the `legalPlaceholder: true` HTML comment
+  (`src/legal.njk` still has the switch on, which also keeps that page
+  noindex).
 
 `scripts/deploy-batch.mjs` runs all of these checks too.
 
@@ -351,7 +356,8 @@ In order of preference:
 | `DEPLOY_HOST contains invalid characters` | Quotes or unexpected chars in `.env`. The script's allowlist rejects values that could break out of the lftp heredoc. |
 | `ignoring unknown .env key 'X'` | `.env` has a line `deploy.sh` doesn't use (typo in a key name?). It is skipped. |
 | `site.json "url" is still the placeholder` | Set the real domain in `src/_data/site.json`. |
-| `still contains example.com / yoursite.com`, `still says 'Your Name'`, `security.txt Expires is N day(s) away` | A template value made it into the build: fix the named `site.json` key (`url`, `security.contact`, `security.expires`, `footer.copyrightName` / `copyrightUrl`) and run `npm run build` again. See [Target checks](#target-checks). |
+| `still contains example.com / yoursite.com`, `still has the template value in footer.…`, `security.txt Expires is N day(s) away` | A template value made it into the build: fix the named `site.json` key (`url`, `security.contact`, `security.expires`, `footer.copyrightName` / `copyrightUrl`) and run `npm run build` again. See [Target checks](#target-checks). |
+| `legal/index.html is still the placeholder legal text` | `src/legal.njk` still has `legalPlaceholder: true`. Replace the text (or keep it on purpose), set it to `false`, rebuild. |
 | `DEPLOY_REMOTE ends in '/x', but site.json says this site is …` | `.env` copied from another project, or the path is missing its last folder. If the folder is right, see [Target checks](#target-checks). |
 | `… folder(s) deep — that looks like an account root` | `DEPLOY_REMOTE` is missing the site folder. See [Target checks](#target-checks). |
 | `index.html missing — refusing to deploy` | The build did not produce `_site/index.html`. Inspect the build output before retrying. |

@@ -21,7 +21,7 @@
 	 Pages can set these in their front matter (the --- block):
 		 title          → Used in <title> and meta tags (falls back to site.name)
 		 description    → Meta description (falls back to site.description)
-		 bodyClass      → CSS classes on <body> (default: "d-flex h-100")
+		 bodyClass      → CSS classes on <body> (default: "d-flex flex-column")
 		 mainClass      → CSS classes on <main> (default: none)
 		 containerClass → Bootstrap container variant wrapping <main> + footer
 		                  (default: "container"). Use "container-fluid" for a
@@ -53,7 +53,7 @@
 	 Example frontmatter:
 		 extraCss: ["/assets/css/expiry.css"]
 		 extraScripts:
-		   - { src: "https://cdn.sheetjs.com/.../xlsx.full.min.js", cdn: true }
+		   - { src: "https://cdn.sheetjs.com/.../xlsx.full.min.js", cdn: true, integrity: "sha384-…", crossorigin: "anonymous" }
 		   - "/assets/js/expiry.js"
 
 	 See the inline comments at the loop sites below for full schema.
@@ -164,32 +164,38 @@
 		 so a page rule with equal specificity beats an HC rule that isn't
 		 !important. Write page CSS with Bootstrap tokens (var(--bs-*)) so
 		 the HC token map still recolours it. #}
-	{% if extraCss %}{% for href in extraCss %}<link rel="stylesheet" href="{{ href }}{% if href.indexOf("http") != 0 %}?v={{ cacheBust }}{% endif %}">
+	{% if extraCss %}{% for href in extraCss %}<link rel="stylesheet" href="{{ href }}{% if href.indexOf("http") != 0 %}?v={{ build.cacheBust }}{% endif %}">
 	{% endfor %}{% endif %}
 </head>
 
 {# `cover-container` is only a hook (named after Bootstrap's Cover example)
 	 for cover pages — style.css has no rule for it; add one there if a cover
 	 page ever needs page-level styling. #}
-<body class="{{ bodyClass | default('d-flex h-100') }}{% if cover %} cover-container{% endif %}">
+{# d-flex flex-column: navbar on top, then #dd-page, which grows
+	 (flex-grow-1) to fill the rest of the screen. style.css §1.0 gives
+	 <body> min-height: 100%, so short pages still reach the bottom. #}
+<body class="{{ bodyClass | default('d-flex flex-column') }}{% if cover %} cover-container{% endif %}">
 
 	{# --- Skip-to-content (accessibility — visible on focus) ---
 		 .visually-hidden-focusable keeps it off-screen until it gets keyboard
 		 focus. position-fixed + .dd-skip-link (z-index in style.css §2.1)
-		 put it ABOVE the fixed navbar — before, it was painted underneath
+		 put it ABOVE the sticky navbar — before, it was painted underneath
 		 the blue bar and the first Tab stop looked like nothing happened.
 		 btn-light (not btn-primary) so it stands out against bg-primary. #}
 	<a class="dd-skip-link visually-hidden-focusable position-fixed top-0 start-0 m-2 btn btn-light btn-sm shadow" href="#content">Skip to main content</a>
 
-	{# --- Fixed-top navbar --- #}
+	{# --- Sticky-top navbar --- #}
 	{% include "navbar.njk" %}
 
 	{# --- Offcanvas navigation menu --- #}
 	{% include "offcanvas-menu.njk" %}
 
 	{# --- Page content wrapper --- #}
-	<div id="dd-page" class="w-100 d-flex flex-column">
-		<div class="{{ containerClass | default('container') }} d-flex w-100 h-100 p-3 mx-auto flex-column">
+	{# flex-grow-1 (not h-100) on both wrappers: each fills the height its
+		 flex parent has left over, so the cover spacer and the footer's
+		 mt-auto below have free space to work with. #}
+	<div id="dd-page" class="w-100 d-flex flex-column flex-grow-1">
+		<div class="{{ containerClass | default('container') }} d-flex w-100 flex-grow-1 p-3 mx-auto flex-column">
 
 			{# --- Flex spacer (cover pages only) — its mb-auto and the
 				 footer's mt-auto split the free height, so <main> ends up
@@ -235,7 +241,7 @@
 		 bootswatch-switcher only when site.bootswatchSwitcher is true).
 		 Edit the source files as usual — every build (and every --watch
 		 rebuild) regenerates the bundle. #}
-	<script src="/assets/js/bundle.js?v={{ cacheBust }}"></script>
+	<script src="/assets/js/bundle.js?v={{ build.cacheBust }}"></script>
 
 	{# --- Page-specific scripts ---
 		 Pages opt in via the `extraScripts:` frontmatter array. Each entry
@@ -243,12 +249,16 @@
 		 cache-bust appended) or an object with shape:
 			 { src, type?, cdn?, integrity?, crossorigin? }
 		 - `type: "module"` emits a module script (for ES-module entry points).
-		 - `cdn: true` skips the cache-bust suffix (use for third-party CDN URLs).
+		 - `cdn: true` skips the cache-bust suffix (use for third-party CDN URLs)
+		   and belongs WITH `integrity` + `crossorigin: "anonymous"` (SRI, like
+		   every CDN file in src/_data/cdn.js). The `checkExtraScripts` filter
+		   (eleventy.config.js) prints a build warning for a CDN script without
+		   one — a warning only, so an experiment still builds.
 		 - `integrity` + `crossorigin` pass through to the <script> tag (SRI).
 		 See the `extraCss` comment in <head> for why this is frontmatter-driven
 		 rather than `{% block scripts %}`. #}
-	{% if extraScripts %}{% for s in extraScripts %}{% if s is string %}<script src="{{ s }}?v={{ cacheBust }}"></script>
-	{% else %}<script {% if s.type %}type="{{ s.type }}" {% endif %}src="{{ s.src }}{% if not s.cdn %}?v={{ cacheBust }}{% endif %}"{% if s.integrity %} integrity="{{ s.integrity }}"{% endif %}{% if s.crossorigin %} crossorigin="{{ s.crossorigin }}"{% endif %}></script>
+	{% if extraScripts %}{% for s in extraScripts | checkExtraScripts(page.inputPath) %}{% if s is string %}<script src="{{ s }}?v={{ build.cacheBust }}"></script>
+	{% else %}<script {% if s.type %}type="{{ s.type }}" {% endif %}src="{{ s.src }}{% if not s.cdn %}?v={{ build.cacheBust }}{% endif %}"{% if s.integrity %} integrity="{{ s.integrity }}"{% endif %}{% if s.crossorigin %} crossorigin="{{ s.crossorigin }}"{% endif %}></script>
 	{% endif %}{% endfor %}{% endif %}
 
 	{# --- Cookie / storage notice — informational, non-blocking ---

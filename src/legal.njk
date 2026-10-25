@@ -1,36 +1,55 @@
----
-# ============================================================
-#  LEGAL PAGE  —  src/legal.njk
-# ============================================================
-#  Replace this content with your own legal text.
-#  The satirical tone below is intentional placeholder content.
-#  Consult a lawyer for real privacy policies.
-#
-#  What IS meant literally: the facts about what the boilerplate
-#  does with visitor data — no cookies of its own, preferences in
-#  localStorage, files from public CDNs (jsDelivr, cdnjs), Google
-#  Fonts (googleFontsUrl, or a Bootswatch theme that imports them)
-#  and Google Analytics (gaId, gaConsent). Those parts read
-#  site.json, so they stay true when you flip a switch.
-#  Keep them (and the cookie toast copy in base.njk) in sync if
-#  the site starts loading anything else from a third party.
-#
-#  PLACEHOLDER SWITCHES (both reversible):
-#    robots: "noindex, follow" — keeps the placeholder text out of
-#      search results (and out of the sitemap / llms.txt).
-#    legalPlaceholder: true — shows a reminder box while you run
-#      `eleventy --watch`; never in `npm run build` output.
-#  When you replace the text (or keep the satire on purpose),
-#  delete the robots line and set legalPlaceholder to false.
-# ============================================================
-layout: base.njk
-title: Legal Notice
-description: "Privacy, cookie and terms information for this site."
-mainClass: pb-5 mt-4
-robots: "noindex, follow"
-legalPlaceholder: true
+---js
+{
+	// ============================================================
+	//  LEGAL PAGE  —  src/legal.njk
+	// ============================================================
+	//  Replace this content with your own legal text.
+	//  The satirical tone below is intentional placeholder content.
+	//  Consult a lawyer for real privacy policies.
+	//
+	//  What IS meant literally: the facts about what the boilerplate
+	//  does with visitor data — no cookies of its own, preferences in
+	//  localStorage, files from public CDNs (jsDelivr, cdnjs), Google
+	//  Fonts (googleFontsUrl, or a Bootswatch theme that imports them)
+	//  and Google Analytics (gaId, gaConsent). Those parts read
+	//  site.json, so they stay true when you flip a switch.
+	//  Keep them (and the cookie toast copy in base.njk) in sync if
+	//  the site starts loading anything else from a third party.
+	//
+	//  ONE PLACEHOLDER SWITCH: legalPlaceholder. While it is true:
+	//    - the page is noindex (`robots` below follows it), so the
+	//      placeholder text stays out of search results, sitemap.xml
+	//      and llms.txt;
+	//    - a reminder box shows under `eleventy --watch` (never in
+	//      `npm run build` output);
+	//    - the built page carries an HTML comment that deploy.sh and
+	//      scripts/deploy-batch.mjs look for, so a deploy is refused
+	//      until the switch is flipped. (A separate robots line used
+	//      to be easy to forget, which left a finished site's legal
+	//      page deindexed — silently and for good.)
+	//  When you replace the text (or keep the satire on purpose), set
+	//  legalPlaceholder to false; the page then indexes like any other.
+	//
+	//  JAVASCRIPT FRONT MATTER (the "---js" fence, as in cheatsheet.njk):
+	//  `eleventyComputed` holds functions that Eleventy runs AFTER the
+	//  data cascade is merged, so `robots` can read `legalPlaceholder`
+	//  and the site-wide default from site.json. YAML can't express
+	//  "this value depends on that one".
+	// ============================================================
+	layout: "base.njk",
+	title: "Legal Notice",
+	description: "Privacy, cookie and terms information for this site.",
+	mainClass: "pb-5 mt-0 mt-md-4",
+	legalPlaceholder: true,
+	eleventyComputed: {
+		robots: (data) => (data.legalPlaceholder ? "noindex, follow" : data.site.robots),
+	},
+}
 ---
 
+{# A real HTML comment (not a Nunjucks one), so it SHIPS in the built page:
+   deploy.sh and scripts/deploy-batch.mjs grep legal/index.html for it. #}
+{% if legalPlaceholder %}<!-- legalPlaceholder: true — placeholder legal text; set legalPlaceholder: false in src/legal.njk before launch -->{% endif %}
 <div class="dd-embossed">
 	{# .dd-prose: same ~70-character reading column as the About page. #}
 	<div class="dd-prose mx-auto">
@@ -38,9 +57,10 @@ legalPlaceholder: true
 	   for `npm run build` (what deploy uses), so this box never ships. #}
 	{% if legalPlaceholder and eleventy.env.runMode != "build" %}
 	<div class="alert alert-warning" role="note">
-		<strong>Placeholder text.</strong> Replace this page (or set
-		<code>legalPlaceholder: false</code> in legal.njk) before launch. Only
-		visible in watch mode.
+		<strong>Placeholder text.</strong> Replace this page, then set
+		<code>legalPlaceholder: false</code> in legal.njk. Until then the page is
+		noindex and <code>npm run deploy</code> refuses to upload. Only visible in
+		watch mode.
 	</div>
 	{% endif %}
 
@@ -245,11 +265,8 @@ legalPlaceholder: true
 			Analytics runs only after you click <em>Accept</em> in the cookie notice; until then, and if you click
 			<em>Decline</em>, nothing is sent to Google. Once accepted, it sets its own cookies (named <code>_ga</code> and
 			<code>_ga_…</code>) and sends your IP address and browsing data on this site to Google, for statistics about our
-			web site, not to identify you on purpose. You can change your mind at any time: declining switches it off again
-			and deletes those cookies.
-		</p>
-		<p>
-			<button type="button" class="btn btn-sm dd-btn-ghost" data-dd-cookie-settings>Change my cookie choice</button>
+			web site, not to identify you on purpose. You can change your mind at any time (button at the end of this
+			section): declining switches it off again and deletes those cookies.
 		</p>
 		{% elif site.gaId %}
 		<p>
@@ -274,6 +291,16 @@ legalPlaceholder: true
 			All browsers let you block or clear cookies and site data in their settings. If you do, the site still works
 			— it just forgets your theme and shows the notice again.
 		</p>
+		{# Only in "required" mode: that's the one mode with a real choice to
+		   change (Accept / Decline). In the default "implied" mode GA (if
+		   any) runs either way, so a "change my choice" button would promise
+		   something the site doesn't do. dfault.js re-opens the toast for
+		   any [data-dd-cookie-settings] element. #}
+		{% if consentRequired %}
+		<p class="mb-0">
+			<button type="button" class="btn btn-sm dd-btn-ghost" data-dd-cookie-settings>Change my cookie choice</button>
+		</p>
+		{% endif %}
 	</section>
 
 	<hr class="mb-5" />

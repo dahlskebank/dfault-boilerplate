@@ -60,7 +60,13 @@
 	 ============================================================
 #}
 
-<nav class="navbar navbar-expand-lg fixed-top {{ site.navbar.bg or 'bg-primary' }}" data-bs-theme="{{ site.navbar.theme or 'dark' }}" aria-label="Main">
+{# sticky-top, not fixed-top: the navbar stays in the page flow, so it
+	 takes up exactly its own height on every theme — 32px (Slate) to
+	 80px (Lux) — and nothing needs a hard-coded body padding under it.
+	 It still sticks to the top while you scroll. (A sticky element only
+	 sticks inside its parent, which is why <body> has min-height, not a
+	 fixed height — see style.css §1.0.) #}
+<nav class="navbar navbar-expand-lg sticky-top {{ site.navbar.bg or 'bg-primary' }}" data-bs-theme="{{ site.navbar.theme or 'dark' }}" aria-label="Main">
 	<div class="container">
 
 		<a href="/" class="navbar-brand">{{ site.name }}</a>

@@ -58,7 +58,14 @@ LOCAL_DIR="${1:-_site}"
 [[ "$DEPLOY_HOST"   =~ ^[A-Za-z0-9.-]+$        ]] || { echo "deploy.sh: DEPLOY_HOST contains invalid characters."   >&2; exit 1; }
 [[ "$DEPLOY_USER"   =~ ^[A-Za-z0-9._-]+$       ]] || { echo "deploy.sh: DEPLOY_USER contains invalid characters."   >&2; exit 1; }
 [[ "$DEPLOY_REMOTE" =~ ^[A-Za-z0-9._/~-]+$     ]] || { echo "deploy.sh: DEPLOY_REMOTE contains invalid characters." >&2; exit 1; }
-case "$DEPLOY_KEY" in *\"*) echo "deploy.sh: DEPLOY_KEY may not contain quotes." >&2; exit 1;; esac
+# DEPLOY_KEY goes into the ssh command that lftp hands to a shell (see the
+# heredoc), so it gets an allowlist too. Spaces are allowed because the default
+# key lives under /c/Users/<name>/.ssh/ and the path is quoted in the command;
+# $ ` \ ; " and friends are not, so nothing in it can be expanded or run.
+# (The pattern sits in a variable: a space inside an unquoted =~ pattern
+# would split the expression.)
+KEY_PATTERN='^[A-Za-z0-9 ._/~:-]+$'
+[[ "$DEPLOY_KEY" =~ $KEY_PATTERN ]] || { echo "deploy.sh: DEPLOY_KEY contains invalid characters (allowed: letters, digits, space . _ / ~ : -)." >&2; exit 1; }
 
 # --- Target sanity checks ---------------------------------------------------
 # mirror --delete makes DEPLOY_REMOTE the most dangerous value in this script:
@@ -90,8 +97,10 @@ fi
 
 # site.json's url must be the real domain: the boilerplate placeholder would ship
 # canonical, og:url and sitemap links that all point at example.com. node is
-# already required for the build, so it reads the JSON here too.
-SITE_HOST=$(node -e "process.stdout.write(new URL(require('./src/_data/site.json').url).hostname)" 2>/dev/null) || SITE_HOST=""
+# already required for the build, so it reads the data here too — through
+# scripts/site-data.js, the same loader the build uses, so a project that has
+# converted site.json to site.js still deploys.
+SITE_HOST=$(node -e "process.stdout.write(new URL(require('./scripts/site-data').loadSiteData().url).hostname)" 2>/dev/null) || SITE_HOST=""
 if [ -z "$SITE_HOST" ]; then
   echo "deploy.sh: could not read a valid \"url\" from src/_data/site.json (run this from the project root, with node on PATH)." >&2
   exit 1
@@ -147,8 +156,14 @@ fi
 #   - security.txt's Expires less than 30 days away, or already passed
 #     (RFC 9116: an expired file is invalid). node reads the date, because
 #     `date -d` differs between Git Bash, Linux and macOS;
-#   - the home page footer still saying "Your Name" / yoursite.com
-#     (site.json footer.copyrightName / copyrightUrl).
+#   - site.json footer.copyrightName / copyrightUrl still "Your Name" /
+#     yoursite.com (read from site.json, not grepped out of the built home
+#     page: a contact form labelled "Your Name" is page copy, not a
+#     misconfiguration, and used to block every deploy);
+#   - the legal page still carrying the legalPlaceholder HTML comment
+#     (src/legal.njk: legalPlaceholder: true also keeps it noindex, so a
+#     finished site that forgot the switch would launch with its privacy
+#     page deindexed).
 # scripts/deploy-batch.mjs runs the same checks.
 for f in robots.txt .well-known/security.txt; do
   if [ -f "$LOCAL_DIR/$f" ] && grep -Eqi 'example\.(com|org|net)|yoursite\.com' "$LOCAL_DIR/$f"; then
@@ -163,8 +178,13 @@ if [ -f "$LOCAL_DIR/.well-known/security.txt" ]; then
     exit 1
   fi
 fi
-if grep -Eq 'Your Name|yoursite\.com' "$LOCAL_DIR/index.html"; then
-  echo "deploy.sh: '$LOCAL_DIR/index.html' still says 'Your Name' or yoursite.com (site.json footer.copyrightName / copyrightUrl). Fix them and rebuild." >&2
+FOOTER_PLACEHOLDERS=$(node -e "const f=require('./scripts/site-data').loadSiteData().footer||{};process.stdout.write([f.copyrightName==='Your Name'&&'footer.copyrightName',/yoursite\.com/i.test(f.copyrightUrl||'')&&'footer.copyrightUrl'].filter(Boolean).join(' and '))" 2>/dev/null) || FOOTER_PLACEHOLDERS=""
+if [ -n "$FOOTER_PLACEHOLDERS" ]; then
+  echo "deploy.sh: src/_data/site.json still has the template value in $FOOTER_PLACEHOLDERS. Fix and rebuild." >&2
+  exit 1
+fi
+if [ -f "$LOCAL_DIR/legal/index.html" ] && grep -q '<!-- legalPlaceholder: true' "$LOCAL_DIR/legal/index.html"; then
+  echo "deploy.sh: '$LOCAL_DIR/legal/index.html' is still the placeholder legal text: set legalPlaceholder: false in src/legal.njk (after replacing the text) and rebuild." >&2
   exit 1
 fi
 

@@ -5,7 +5,8 @@
  *
  *  Templates get `site` for free from Eleventy's data cascade, but
  *  code OUTSIDE the templates can't: eleventy.config.js (the JS
- *  bundle and the placeholder warning) and scripts/check-refs.js
+ *  bundle and the placeholder warning), scripts/check-refs.js,
+ *  deploy.sh and scripts/deploy-batch.mjs (the deploy gates)
  *  need a few site.* values too. They all call loadSiteData() so
  *  the file is read in exactly one place.
  *

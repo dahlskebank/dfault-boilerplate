@@ -17,6 +17,15 @@
 	// stylelint. Derived projects inherit this file, and the gate with it.
 	"css.validate": false,
 
+	// No format-on-save for Markdown. The global user settings format on
+	// save with Prettier, which rewrites hand-formatted .md files (list
+	// indents, *italic* → _italic_, re-padded tables). .prettierignore
+	// already lists *.md; this is the second lock in case the Prettier
+	// extension ever runs without reading that file.
+	"[markdown]": {
+		"editor.formatOnSave": false
+	},
+
 	// Peacock single-source-of-truth color. The boilerplate's default is a
 	// neutral slate gray so an unconfigured fork is obviously "the template".
 	"peacock.color": "#3C4F65",

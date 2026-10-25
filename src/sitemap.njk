@@ -21,7 +21,9 @@
 #  last commit date and falls back to the file's modified time
 #  for uncommitted files. Override per page with QUOTED front
 #  matter: lastmod: "2026-10-24" (unquoted YAML dates become
-#  Date objects; those are converted below too).
+#  Date objects; those are converted below too). No date at all
+#  (a virtual template, an unreadable file) → no <lastmod> line:
+#  an empty <lastmod></lastmod> is an invalid date to Search Console.
 #
 #  The xmlns value must be exactly the sitemaps.org one —
 #  Search Console / Bing reject anything else.
@@ -39,7 +41,9 @@ layout: false
 {%- set lastmod = entry.data.lastmod or (entry.inputPath | lastModified) %}
 	<url>
 		<loc>{{ site.url }}{{ entry.url }}</loc>
+{%- if lastmod %}
 		<lastmod>{{ lastmod.toISOString() if lastmod.toISOString else lastmod }}</lastmod>
+{%- endif %}
 	</url>
 {%- endif %}
 {%- endfor %}

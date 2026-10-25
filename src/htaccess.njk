@@ -36,11 +36,25 @@ FileETag None
 </IfModule>
 
 # --- www → non-www redirect (bare domain is canonical) ---
+#     The target is this site's own address from site.json, NOT the Host
+#     header the request came with. The usual recipe captures the host
+#     from %{HTTP_HOST} ("RewriteRule ^ https://%1%{REQUEST_URI}") and so
+#     sends the visitor wherever that header says: if a request with a
+#     foreign Host ever reaches this file (default vhost, wildcard
+#     alias), that is an open redirect. Only hosts starting with "www."
+#     match, so a local domain (bp.test, or the real domain mapped in
+#     the hosts file) is never redirected. On Domeneshop a proxy answers
+#     www. before Apache sees it; other hosts rely on this rule. Not
+#     generated when site.url itself is a www. host (it would loop).
+{%- if (site.url | hostname).indexOf("www.") != 0 %}
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-	RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+	RewriteCond %{HTTP_HOST} ^www\. [NC]
+	RewriteRule ^ {{ site.url | safe }}%{REQUEST_URI} [R=301,L]
 </IfModule>
+{%- else %}
+#     (skipped: site.url is a www. host)
+{%- endif %}
 
 # --- Clean URLs: strip index.html from any request ---
 #     THE_REQUEST is the raw request line the browser sent, e.g.
@@ -157,7 +171,20 @@ AddType image/x-icon ico cur
 	#     <meta name="robots"> tag can't reach. Don't ALSO add
 	#     "Disallow: /" to robots.txt: a crawler that may not fetch a page
 	#     never sees this header, and can still list the bare URL.
-	Header set X-Robots-Tag "noindex, nofollow"
+	#     `always`, like the headers above: Apache's own redirects and
+	#     error responses must carry the noindex too.
+	Header always set X-Robots-Tag "noindex, nofollow"
+{%- elif site.llmsTxt !== false %}
+
+	# --- llms.txt: readable, but not a search result ---
+	#     The file is for AI tools; people should land on the real pages.
+	#     Google's John Mueller has said keeping llms.txt out of the index
+	#     "could make sense", so a link to it can't make Google show the
+	#     raw text file instead of the HTML. noindex only affects search
+	#     listings: robots.txt still lets crawlers and AI tools fetch it.
+	<Files "llms.txt">
+		Header set X-Robots-Tag "noindex"
+	</Files>
 {%- endif %}
 </IfModule>
 

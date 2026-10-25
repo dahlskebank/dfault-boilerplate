@@ -29,11 +29,10 @@
  *      is picked by CSS (style.css §4.4) from the state theme-init
  *      already put on <html>, so it's right on first paint.
  *
- *  DARK-ONLY BOOTSWATCH THEMES (Darkly, Vapor, … — the list is in
- *  src/_data/cdn.js): Light and Auto can't take effect there, so
- *  they are disabled while one is active and Dark shows as
- *  selected. The saved choice is kept, so switching back to a
- *  light Bootswatch theme brings it back.
+ *  Light / Dark / Auto work on every Bootswatch theme, like the
+ *  toggle on bootswatch.com. On themes designed dark (Cyborg,
+ *  Quartz, Vapor …) "Light" is the theme's designed look and
+ *  "Dark" its alternative dark palette (see src/_data/cdn.js).
  *
  *  USAGE:
  *  Loaded on every page through /assets/js/bundle.js (the
@@ -55,19 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	// The template's label ("Change theme") — the current theme is appended to it.
 	const triggerLabel = trigger ? trigger.getAttribute("aria-label") : "";
 
-	const isHC = (id) => ddTheme.hcClasses.includes(id);
-
 	function syncUI() {
-		// On a dark-only Bootswatch theme every non-HC choice looks like Dark.
-		const shown = ddTheme.darkOnly && !isHC(ddTheme.choice) ? "dark" : ddTheme.choice;
 		let currentLabel = "";
 
 		options.forEach((opt) => {
 			const id = opt.dataset.theme;
-			const on = id === shown;
+			const on = id === ddTheme.choice;
 			opt.classList.toggle("active", on);
 			opt.setAttribute("aria-pressed", on ? "true" : "false");
-			opt.disabled = ddTheme.darkOnly && id !== "dark" && !isHC(id);
 			if (on) currentLabel = opt.textContent.trim();
 		});
 

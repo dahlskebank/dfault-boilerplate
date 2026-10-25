@@ -125,7 +125,7 @@
 {% endif %}
 
 {# --- Your custom stylesheet (loaded LAST so it can override everything above) --- #}
-<link rel="stylesheet" href="/assets/css/style.css?v={{ cacheBust }}" id="site-css" media="all">
+<link rel="stylesheet" href="/assets/css/style.css?v={{ build.cacheBust }}" id="site-css" media="all">
 
 {# --- Flat utility (orthogonal binary toggle, .flat on <html>) ---
 	Loaded after style.css so it wins on border-radius / shadows.
@@ -134,7 +134,7 @@
 	Skipped when site.json → flatToggle is false: theme-init.njk then
 	never adds .flat, so nothing in the file could match. #}
 {% if site.flatToggle !== false %}
-<link rel="stylesheet" href="/assets/css/flat.css?v={{ cacheBust }}" id="flat-css" media="all">
+<link rel="stylesheet" href="/assets/css/flat.css?v={{ build.cacheBust }}" id="flat-css" media="all">
 {% endif %}
 
 {# --- High contrast (after Bootstrap, style.css and flat.css) ---
@@ -145,7 +145,7 @@
 	a page's own `extraCss` links (base.njk) come after it. So page
 	CSS must respect HC: use Bootstrap tokens (var(--bs-*)), which
 	the HC token map recolours. #}
-<link rel="stylesheet" href="/assets/css/high-contrast.css?v={{ cacheBust }}" id="hc-css" media="all">
+<link rel="stylesheet" href="/assets/css/high-contrast.css?v={{ build.cacheBust }}" id="hc-css" media="all">
 
 {# --- Google Analytics ---
 	Only loads if site.gaId is set in site.json.

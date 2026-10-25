@@ -35,6 +35,7 @@
 		2.1 Skip link
 		2.2 Utility classes
 		2.3 Footer rows (mobile)
+		2.4 Footer separator line
 	3.0 Header
 		3.1 Navbar brand
 		3.2 Navbar depth
@@ -62,15 +63,28 @@
 1.0		Body
 --------------------------------------------------------------*/
 
-/* Clearance under the fixed-top navbar, in ONE place. Used by the
-   body padding below, html scroll-padding (5.2) and the cheatsheet's
-   sticky TOC (8.0). Change it here if the navbar gets taller. */
+/* The navbar is sticky-top (navbar.njk): it sits in the page flow and
+   pushes the content down by exactly its own height, on every theme.
+   The old fixed-top navbar needed `body { padding-top: 5rem }`, a
+   guess that had to cover the tallest Bootswatch navbar (Lux, 80px),
+   so plain Bootstrap's 48px mobile navbar got 32px of empty space
+   under it.
+
+   --dd-navbar-offset is still used where something must clear the
+   navbar from OUTSIDE the flow: html scroll-padding for anchor jumps
+   (5.2) and the cheatsheet's sticky TOC (8.0). An overestimate there
+   only adds breathing room above the target, so 5rem (Lux) is safe. */
 :root {
 	--dd-navbar-offset: 5rem;
 }
 
+/* A sticky element only sticks inside its parent. With a fixed height
+   (h-100) <body> would end after one screen and the navbar would
+   scroll away with it; min-height lets it grow with the content.
+   100% = <html class="h-100">, so short pages still fill the screen
+   and the footer's mt-auto pins it to the bottom. */
 body {
-	padding-top: var(--dd-navbar-offset);
+	min-height: 100%;
 }
 
 /* Custom font stack — OPT-IN via site.json "fontOverride": true
@@ -180,16 +194,20 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 @supports not selector(::-webkit-scrollbar) {
 	html {
 		scrollbar-width: auto;
-		scrollbar-color: var(--bs-tertiary-color) var(--bs-tertiary-bg);
+		scrollbar-color: var(--bs-tertiary-color) rgba(var(--bs-body-color-rgb), 0.06);
 	}
 }
+
+/* Track: a 6% tint of the body colour instead of --bs-tertiary-bg,
+   which the dark designed Bootswatch themes leave at #f8f9fa in Light
+   mode — a bright stripe beside a near-black page (see 4.2). */
 
 ::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
 }
 ::-webkit-scrollbar-track {
-	background: var(--bs-tertiary-bg);
+	background: rgba(var(--bs-body-color-rgb), 0.06);
 }
 ::-webkit-scrollbar-thumb {
 	background: var(--bs-tertiary-color);
@@ -198,9 +216,11 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	background: var(--bs-primary);
 }
 
+/* Body colour, not --bs-emphasis-color (#000 on the dark designed
+   Bootswatch themes in Light mode, see 4.2). */
 ::selection {
 	background: rgba(var(--bs-primary-rgb), 0.3);
-	color: var(--bs-emphasis-color);
+	color: var(--bs-body-color);
 }
 
 /*--------------------------------------------------------------
@@ -211,9 +231,9 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 2.1		Skip link
 
 	The skip link (base.njk) is position-fixed at the top-left.
-	Without a z-index the fixed navbar (.fixed-top, z-index 1030)
+	Without a z-index the navbar (.sticky-top, z-index 1020)
 	painted over it, so the first Tab stop was invisible.
-	1100 = above every Bootstrap layer: fixed-top 1030, offcanvas
+	1100 = above every Bootstrap layer: sticky-top 1020, offcanvas
 	1045, modal 1055, toast-container 1090 (and the film grain,
 	also 1090, which is pointer-events: none anyway).
 --------------------------------------------------------------*/
@@ -266,7 +286,9 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
    instead of putting white text on a white card (1.00:1). */
 [data-bs-theme="light"] .dd-embossed {
 	background-color: var(--bs-body-bg);
-	border: 1px solid rgba(var(--bs-emphasis-color-rgb), 0.06);
+	/* body colour, not emphasis (#000 on the dark designed Bootswatch
+	   themes, where a black hairline on a dark card disappears) */
+	border: 1px solid rgba(var(--bs-body-color-rgb), 0.08);
 	box-shadow:
 		0 1px 3px rgba(0, 0, 0, 0.04),
 		0 6px 20px rgba(0, 0, 0, 0.08);
@@ -331,6 +353,50 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	.dd-footer-row > :only-child {
 		grid-column: 1 / -1;
 	}
+}
+
+/*--------------------------------------------------------------
+2.4		Footer separator line
+
+	The line above the footer used to be <footer class="border-top">,
+	which spans the whole container: fine on a phone, but on desktop
+	a long rule under a short, centred block of footer text.
+
+	Now .dd-footer-inner (footer.njk) shrinks to its text with
+	width: fit-content and is centred with margin-inline: auto. Its
+	::before draws the line, reaching 5% past each side
+	(left/right: -5% = 5% of the wrapper's own width), so the line is
+	exactly 10% wider than the footer text.
+
+	On a phone the text is nearly full width, so +10% would stick out
+	past the screen and cause sideways scrolling. overflow-x: clip on
+	<footer> trims the line at the footer's edge instead. (`clip`, not
+	`hidden`: hidden would make the footer a scroll container; clip
+	just cuts off the overflow.)
+
+	The colour uses Bootstrap's border tokens, exactly like the old
+	.border-top, so dark mode, Bootswatch and high-contrast still
+	recolour it.
+--------------------------------------------------------------*/
+
+footer:has(> .dd-footer-inner) {
+	overflow-x: clip;
+}
+
+.dd-footer-inner {
+	position: relative;
+	width: fit-content;
+	max-width: 100%;
+	margin-inline: auto;
+}
+
+.dd-footer-inner::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -5%;
+	right: -5%;
+	border-top: var(--bs-border-width) solid var(--bs-border-color);
 }
 
 /*--------------------------------------------------------------
@@ -405,6 +471,23 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	navbar's active colour (white here: 4.50:1 against #0d6efd)
 	replaces it. Outlines also survive flat mode, which removes
 	box-shadows.
+
+	ICON BUTTONS: the theme trigger and the hamburger have no text,
+	so the hover underline has nothing to draw under, and their white
+	icon can't get any brighter. Their hover tints the BACKGROUND:
+	10% of --bs-emphasis-color. Resolved inside the navbar's own
+	data-bs-theme, that is white on a dark bar and black on a light
+	one, so it follows site.navbar.theme by itself. (Safe here, unlike
+	on the page — see 4.2: the navbar always sets its own mode, so it
+	never reads a Bootswatch theme's half-converted Light palette.) The white icon keeps 3.88:1
+	on tinted #0d6efd (icons need 3:1, WCAG 1.4.11). Text links get
+	no tint: white TEXT on it would fall below 4.5:1.
+	The hover sits in @media (hover: hover) because a touch screen
+	keeps :hover after a tap, so the hamburger would stay tinted
+	after the menu closes. The theme trigger also keeps the tint
+	while its dropdown is open (Bootstrap adds .show to it then).
+	Flat mode squares the tint (it zeroes --bs-border-radius), and
+	high-contrast.css swaps in its own button colours (!important).
 --------------------------------------------------------------*/
 
 .navbar .navbar-brand {
@@ -436,6 +519,27 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	box-shadow: none;
 }
 
+/* One place to make the tint stronger or softer. The buttons inherit
+   --bs-emphasis-color-rgb from the navbar's data-bs-theme. */
+.navbar :is(#dd-theme-trigger, #dd-offcanvas-toggle) {
+	--dd-navbar-icon-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.1);
+}
+
+/* The hamburger is already rounded (.navbar-toggler); a .nav-link isn't. */
+.navbar #dd-theme-trigger {
+	border-radius: var(--bs-border-radius);
+}
+
+@media (hover: hover) {
+	.navbar :is(#dd-theme-trigger, #dd-offcanvas-toggle):hover {
+		background-color: var(--dd-navbar-icon-hover-bg);
+	}
+}
+
+.navbar #dd-theme-trigger.show {
+	background-color: var(--dd-navbar-icon-hover-bg);
+}
+
 /*--------------------------------------------------------------
 3.4		Offcanvas toggle
 
@@ -462,7 +566,9 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	min-width: 44px;
 	min-height: 44px;
 	margin-block: -0.375rem;
-	transition: color 0.15s ease;
+	transition:
+		color 0.15s ease,
+		background-color 0.15s ease;
 }
 .navbar-expand-lg #dd-offcanvas-toggle:hover {
 	color: var(--bs-navbar-hover-color);
@@ -537,20 +643,34 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	properties inherit like `color` does) — including the Bootswatch
 	switcher buttons, which sit outside the <nav> landmark.
 
-	Current page / hover: --bs-primary-text-emphasis, Bootstrap's
-	token for text on tinted backgrounds — 11.43:1 light, 5.10:1
-	dark on the 7.5% tint. Plain --bs-primary was 3.81:1 / 2.74:1
-	(Bootstrap keeps #0d6efd in dark mode; it only re-tunes the
-	*-text-emphasis and link tokens).
+	ONLY THE BODY PAIR. Everything here is built from --bs-body-color
+	and --bs-body-bg (plus see-through tints of the body colour). Those
+	two are the one pair every theme gets right — all its body text
+	depends on them. Other tokens are not safe: Bootswatch themes
+	DESIGNED dark (Cyborg, Vapor, Darkly … — cdn.js darkPalette) leave
+	--bs-emphasis-color (#000), *-text-emphasis, --bs-tertiary-bg and
+	--bs-border-color at the values Bootstrap computed for a WHITE page
+	in their Light mode. The current page used to be
+	--bs-primary-text-emphasis: dark navy on near-black, 1.20–2.83:1
+	on those 7 themes.
 
-	Focus: Bootstrap's 25%-alpha blue ring is ~1.4:1 here; a solid
-	2px outline in the same text-emphasis colour (13.51:1 / 6.39:1
-	against the panel) replaces it, drawn inside the row.
+	Hover: a 5% tint of the body colour behind body-coloured text.
+	Current page: an 8% tint, bold text and a 3px bar on the start
+	edge, so it isn't marked by colour alone. The tints stay light on
+	purpose: any tint lowers the text contrast a little, and Quartz /
+	Solar's own body text is only 4.60 / 4.75:1 in Light mode (8% →
+	~4.0 / 4.3:1; every other theme keeps ≥ 4.5:1 or its own value). The bar is a real border,
+	not a box-shadow: high-contrast.css removes every shadow but keeps
+	borders (in currentColor), so the current page stays marked in HC
+	too. The padding shrinks by the same 3px, so the text doesn't move.
+
+	Focus: a solid 2px outline in the body colour, drawn inside the row
+	(Bootstrap's 25%-alpha blue ring is ~1.4:1 against the panel).
 --------------------------------------------------------------*/
 
 .dd-offcanvas-nav {
 	--bs-nav-link-color: var(--bs-body-color);
-	--bs-nav-link-hover-color: var(--bs-primary-text-emphasis);
+	--bs-nav-link-hover-color: var(--bs-body-color);
 	--bs-nav-link-disabled-color: var(--bs-secondary-color);
 	--bs-nav-link-padding-x: 1.25rem;
 	--bs-nav-link-padding-y: 0.6rem;
@@ -561,13 +681,19 @@ footer .dd-footer-row a:is(:hover, :focus-visible, :active) {
 	align-items: center;
 	gap: 0.5rem;
 }
-.dd-offcanvas-nav .nav-link:hover,
+.dd-offcanvas-nav .nav-link:hover {
+	color: var(--bs-body-color);
+	background-color: rgba(var(--bs-body-color-rgb), 0.05);
+}
 .dd-offcanvas-nav .nav-link.active {
-	color: var(--bs-primary-text-emphasis);
-	background-color: rgba(var(--bs-emphasis-color-rgb), 0.075);
+	color: var(--bs-body-color);
+	background-color: rgba(var(--bs-body-color-rgb), 0.08);
+	font-weight: 600;
+	border-inline-start: 3px solid var(--bs-body-color);
+	padding-inline-start: calc(var(--bs-nav-link-padding-x) - 3px);
 }
 .dd-offcanvas-nav .nav-link:focus-visible {
-	outline: 2px solid var(--bs-primary-text-emphasis);
+	outline: 2px solid var(--bs-body-color);
 	outline-offset: -2px;
 	box-shadow: none;
 }
@@ -646,6 +772,20 @@ button.nav-link.dd-bootswatch-option {
 	display: inline;
 }
 
+/* The trigger is a flex row, not Bootstrap's display: block. The
+   template puts each icon on its own line, and in a normal block that
+   whitespace collapses into one space between the visible icon and
+   the dropdown caret. The hover underline (3.3) then drew a short
+   line under that lone space. A flex container drops whitespace-only
+   text between its items, so the space is gone however the template
+   is formatted. The caret (::after) becomes a flex item too:
+   align-items centres it, and its 0.255em margin-left is Bootstrap's
+   own gap before a caret. */
+#dd-theme-trigger {
+	display: flex;
+	align-items: center;
+}
+
 /* Bootswatch switcher's collapsible header (bootswatch-switcher.njk,
    ported from the fg project). Looks like a 4.3 section label, but it
    is a real <button>: keyboard-reachable, with aria-expanded.
@@ -670,12 +810,14 @@ button.nav-link.dd-bootswatch-option {
 	background: none;
 	border: 0;
 }
+/* Body colour, not --bs-emphasis-color: that one is #000 on the dark
+   designed Bootswatch themes in Light mode (see 4.2). */
 .dd-offcanvas-nav .dd-offcanvas-section-toggle:hover {
-	color: var(--bs-emphasis-color);
+	color: var(--bs-body-color);
 }
 /* Same solid ring as the menu links (4.2). */
 .dd-offcanvas-nav .dd-offcanvas-section-toggle:focus-visible {
-	outline: 2px solid var(--bs-primary-text-emphasis);
+	outline: 2px solid var(--bs-body-color);
 	outline-offset: -2px;
 }
 /* Caret points down when closed, flips up when Bootstrap sets
@@ -697,17 +839,25 @@ button.nav-link.dd-bootswatch-option {
    active and focus all still work (and every theme recolours it).
    For small buttons on the page surface where btn-outline-secondary
    (#6c757d, 3.29:1 in dark mode) or btn-outline-primary (3.43:1 in
-   dark) are too faint. Text: 15.43:1 light / 11.85:1 dark. */
+   dark) are too faint. Text: 15.43:1 light / 11.85:1 dark.
+
+   Built from the body pair only (why: 4.2). Selected (.active /
+   aria-pressed) = an 8% tint, a border in the full body colour and
+   bold text (tint kept light for contrast, see 4.2). It used to be INVERTED (emphasis-colour fill, page-colour
+   text), which had two problems: on the dark designed Bootswatch
+   themes in Light mode that was #000 on #060606 (invisible), and in
+   dark mode the selected "Dark" button turned white, so it read as
+   "light". */
 .dd-btn-ghost {
 	--bs-btn-color: var(--bs-body-color);
-	--bs-btn-border-color: var(--bs-border-color);
-	--bs-btn-hover-color: var(--bs-emphasis-color);
-	--bs-btn-hover-bg: var(--bs-tertiary-bg);
-	--bs-btn-hover-border-color: var(--bs-border-color);
-	--bs-btn-active-color: var(--bs-body-bg);
-	--bs-btn-active-bg: var(--bs-emphasis-color);
-	--bs-btn-active-border-color: var(--bs-emphasis-color);
-	--bs-btn-focus-shadow-rgb: var(--bs-emphasis-color-rgb);
+	--bs-btn-border-color: rgba(var(--bs-body-color-rgb), 0.35);
+	--bs-btn-hover-color: var(--bs-body-color);
+	--bs-btn-hover-bg: rgba(var(--bs-body-color-rgb), 0.05);
+	--bs-btn-hover-border-color: rgba(var(--bs-body-color-rgb), 0.5);
+	--bs-btn-active-color: var(--bs-body-color);
+	--bs-btn-active-bg: rgba(var(--bs-body-color-rgb), 0.08);
+	--bs-btn-active-border-color: var(--bs-body-color);
+	--bs-btn-focus-shadow-rgb: var(--bs-body-color-rgb);
 	/* Disabled state: Bootstrap 5.3's base .btn defines no
 	   --bs-btn-disabled-color/-bg/-border-color (only the variants do),
 	   so without these the disabled border falls back to currentColor —
@@ -715,7 +865,13 @@ button.nav-link.dd-bootswatch-option {
 	   Bootstrap's --bs-btn-disabled-opacity (.65) still fades it. */
 	--bs-btn-disabled-color: var(--bs-body-color);
 	--bs-btn-disabled-bg: transparent;
-	--bs-btn-disabled-border-color: var(--bs-border-color);
+	--bs-btn-disabled-border-color: rgba(var(--bs-body-color-rgb), 0.35);
+}
+/* Bold marks the selected button by more than colour. Bootstrap's .btn
+   has one --bs-btn-font-weight for every state, so it's set here. */
+.dd-btn-ghost.active,
+.dd-btn-ghost[aria-pressed="true"] {
+	font-weight: 600;
 }
 
 /*--------------------------------------------------------------
@@ -741,12 +897,27 @@ button.nav-link.dd-bootswatch-option {
 
 	scroll-padding-top on the scroll container (<html>) keeps EVERY
 	in-page jump — #anchors, the skip link's #content, and Chrome's
-	scroll-to-focused-element — clear of the fixed navbar. One rule
+	scroll-to-focused-element — clear of the sticky navbar. One rule
 	instead of a scroll-margin on each kind of target.
 --------------------------------------------------------------*/
 
 html {
 	scroll-padding-top: var(--dd-navbar-offset);
+}
+
+/* ...except for the navbar itself. scroll-padding tells Chrome "the top
+   5rem of the screen is covered". The sticky navbar SITS in that strip,
+   so whenever something inside it gets focus — Bootstrap hands focus
+   back to the hamburger when the offcanvas closes, or a keyboard user
+   tabs onto a navbar link — Chrome scrolled the page back ~400–470px to
+   "reveal" it (measured in Chrome at 412 and 1280px wide). A negative
+   scroll-margin of the same size cancels the padding for navbar
+   elements only; anchors, the skip link and focus on page content keep
+   their clearance. (Not needed while the navbar was fixed-top: a fixed
+   element is never scrolled into view.) */
+.navbar,
+.navbar * {
+	scroll-margin-top: calc(-1 * var(--dd-navbar-offset));
 }
 
 /* Disabled: replaced by the html rule above (both together would add up).
@@ -1026,9 +1197,11 @@ body.bd-cheatsheet-page #dd-page > .container {
 }
 
 /* --- TOC links: left-border accent on hover/active, no fill ---
-   Text uses --bs-primary-text-emphasis (13.51:1 light / 6.39:1 dark);
-   plain --bs-primary text was 3.43:1 in dark mode at .small size.
-   The border accent stays --bs-primary (a decoration, 3.43:1+). */
+   Text stays in the body colour (plain --bs-primary was 3.43:1 in dark
+   mode at .small size, and --bs-primary-text-emphasis is dark navy on
+   the dark designed Bootswatch themes in Light mode — see 4.2). The
+   current section is marked by the border accent (--bs-primary, a
+   decoration) and the bolder weight. */
 #toc a {
 	display: block;
 	padding: 0.125rem 0 0.125rem 0.75rem;
@@ -1039,7 +1212,7 @@ body.bd-cheatsheet-page #dd-page > .container {
 
 #toc a:hover,
 #toc a.active {
-	color: var(--bs-primary-text-emphasis);
+	color: var(--bs-body-color);
 	border-left-color: var(--bs-primary);
 }
 
@@ -1051,16 +1224,18 @@ body.bd-cheatsheet-page #dd-page > .container {
 9.0		Print
 
 	Bootstrap 5 ships no print styles any more, so: hide the screen
-	chrome (fixed navbar — Chrome repeats it on every printed page —
-	offcanvas, cookie toast, skip link), drop the navbar clearance
-	and the animations, and print dark mode as light.
+	chrome (navbar, offcanvas, cookie toast, skip link), drop the
+	animations, and print dark mode as light.
 
 	Dark → light: Chrome doesn't print background colours by default,
 	so dark mode's light text (#dee2e6) would land on white paper.
 	The block below re-points the core colour tokens at Bootstrap's
-	light values while printing. It targets only <html
-	data-bs-theme="dark">; high-contrast modes have no data-bs-theme
-	and keep their own print fallback (high-contrast.css §15.0).
+	light values while printing. It targets <html data-bs-theme="dark">,
+	plus "light" on a Bootswatch theme designed dark (Cyborg, Vapor …:
+	theme-init.njk marks those with data-dd-dark-palette, because
+	their Light mode IS the dark designed palette). High-contrast
+	modes have no data-bs-theme and keep their own print fallback
+	(high-contrast.css §15.0).
 --------------------------------------------------------------*/
 
 @media print {
@@ -1069,10 +1244,6 @@ body.bd-cheatsheet-page #dd-page > .container {
 	.toast-container,
 	.dd-skip-link {
 		display: none !important;
-	}
-
-	body {
-		padding-top: 0;
 	}
 
 	body::before {
@@ -1092,7 +1263,8 @@ body.bd-cheatsheet-page #dd-page > .container {
 		box-shadow: none;
 	}
 
-	:root[data-bs-theme="dark"] {
+	:root[data-bs-theme="dark"],
+	:root[data-dd-dark-palette][data-bs-theme="light"] {
 		color-scheme: light;
 		--bs-body-color: #212529;
 		--bs-body-color-rgb: 33, 37, 41;

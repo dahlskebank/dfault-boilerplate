@@ -41,7 +41,7 @@
 	    of the theme or class list any more.
 	      ddTheme.choice           → saved id, or "auto"
 	      ddTheme.choose(id)       → save + paint ("auto" = forget)
-	      ddTheme.setBootswatch(n) → dark-only Bootswatch theme? (below)
+	      ddTheme.setBootswatch(n) → note a dark-palette Bootswatch theme (below)
 	      ddTheme.apply()          → paint; fires "dd:themechange"
 
 	The ids come from themes.js through the Nunjucks loop below, so
@@ -86,28 +86,27 @@
 		if (t.group === "hc") hcClasses.push(t.id);
 	});
 
-	{# Bootswatch themes that only have a dark palette (src/_data/cdn.js).
-		While one is active, Light / Auto would just mix palettes, so every
-		non-HC choice is shown as dark. Forced dark = Bootswatch's stock
-		[data-bs-theme=dark] palette, so Cyborg, Superhero, Quartz and Vapor
-		look different from their bootswatch.com preview (details in cdn.js).
+	{# Bootswatch themes whose DESIGNED palette is dark (src/_data/cdn.js).
+		Light / Dark / Auto work on them like on any theme (Light = the
+		designed palette, as on bootswatch.com); the list only adds
+		data-dd-dark-palette to <html>, so the print styles (style.css §9.0)
+		know that "Light" is dark here.
 		`or []` / `or "default"` (here and below): `dump` of a missing key
 		prints NOTHING, and `var x = ;` is a syntax error that would stop
 		this whole script (no data-bs-theme, no ddStore, dead buttons). #}
-	var darkOnlyThemes = {{ (cdn.bootswatch.darkOnly or []) | dump | safe }};
+	var darkPaletteThemes = {{ (cdn.bootswatch.darkPalette or []) | dump | safe }};
 	var osDark = window.matchMedia("(prefers-color-scheme: dark)");
 
 	var ddTheme = {
 		ids: ids,
 		hcClasses: hcClasses,
 		choice: "auto",
-		darkOnly: false,
+		darkPalette: false,
 
 		{# What a choice looks like right now: an HC class name, or the
 			data-bs-theme value ("auto" → whatever the OS says). #}
 		resolve: function (choice) {
 			if (hcClasses.indexOf(choice) !== -1) return choice;
-			if (ddTheme.darkOnly) return "dark";
 			if (choice === "auto" || ids.indexOf(choice) === -1) return osDark.matches ? "dark" : "light";
 			return choice;
 		},
@@ -124,6 +123,8 @@
 			} else {
 				html.setAttribute("data-bs-theme", theme);
 			}
+			if (ddTheme.darkPalette) html.setAttribute("data-dd-dark-palette", "");
+			else html.removeAttribute("data-dd-dark-palette");
 			document.dispatchEvent(new CustomEvent("dd:themechange", { detail: { choice: ddTheme.choice, theme: theme } }));
 		},
 
@@ -138,7 +139,7 @@
 
 		{# Called by bootswatch-switcher.js once a new theme has loaded. #}
 		setBootswatch: function (name) {
-			ddTheme.darkOnly = darkOnlyThemes.indexOf(name) !== -1;
+			ddTheme.darkPalette = darkPaletteThemes.indexOf(name) !== -1;
 			ddTheme.apply();
 		}
 	};
@@ -151,7 +152,7 @@
 		(only while the switcher is on, so a stale pick is ignored once it's
 		off) or the site default from site.json. #}
 	var bootswatch = {% if site.bootswatchSwitcher %}get("bootswatchTheme") || {% endif %}{{ (site.defaultBootswatchTheme or "default") | dump | safe }};
-	ddTheme.darkOnly = darkOnlyThemes.indexOf(bootswatch) !== -1;
+	ddTheme.darkPalette = darkPaletteThemes.indexOf(bootswatch) !== -1;
 
 	ddTheme.apply();
 

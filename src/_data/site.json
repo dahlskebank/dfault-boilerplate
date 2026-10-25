@@ -30,7 +30,7 @@
 	"alternateName": [],
 
 	"_comment_version": "Footer version. Bump with `npm run bump:patch|minor|major`. (On Daniel's machine, a global Claude Code Stop hook reminds you if src/ changes go uncommitted without a bump.)",
-	"version": "v1.2.0",
+	"version": "v1.2.1",
 
 	"_comment_author": [
 		"Who BUILT the website — Daniel on every site, also when the site is ABOUT someone else (credit the subject in the page content, not here).",

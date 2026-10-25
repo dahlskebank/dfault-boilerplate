@@ -87,14 +87,18 @@ module.exports = function (eleventyConfig) {
 	 *  without processing.  All static assets live under src/assets/
 	 *  and are served at /assets/ in the built site.
 	 *
-	 *  The `filter` keeps README.md notes (e.g. a font-licence note
-	 *  in src/assets/fonts/) out of the public site. Passthrough copy
-	 *  does NOT obey the IGNORES section below — it copies everything
-	 *  it's pointed at — so it needs its own filter. (The filter gets
-	 *  each file's path relative to src/assets/.)
+	 *  Passthrough copy does NOT obey the IGNORES section below — it
+	 *  copies everything it's pointed at — so it needs its own filter.
+	 *  The filter (given each path relative to src/assets/) skips:
+	 *    - README.md notes (e.g. a font-licence note in src/assets/fonts/);
+	 *    - any folder or file whose name starts with "_" (src/assets/
+	 *      img/_originals/, _notes.txt): the same safety net the IGNORES
+	 *      give templates, because a scratch folder next to the images
+	 *      would otherwise be uploaded with the site. (Checked 2026-10-25:
+	 *      without this, src/assets/_probe/secret.txt reached _site/.)
 	 * ---------------------------------------------------------- */
 	eleventyConfig.addPassthroughCopy("src/assets", {
-		filter: (relPath) => !/(^|[\\/])README\.md$/i.test(relPath),
+		filter: (relPath) => !/(^|[\\/])(_[^\\/]*|README\.md)([\\/]|$)/i.test(relPath),
 	});
 
 	// Copy favicon.ico to the site root  (src/favicon.ico → _site/favicon.ico)
@@ -112,13 +116,20 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addWatchTarget("src/assets/");
 
 	/* ----------------------------------------------------------
-	 *  CACHE-BUSTING
+	 *  CACHE-BUSTING  —  lives in src/_data/build.js, not here
 	 * ----------------------------------------------------------
-	 *  A build timestamp appended to local CSS/JS URLs as ?v=...
-	 *  Forces browsers to fetch fresh assets after each build.
-	 *  Available in templates as {{ cacheBust }}.
+	 *  Local CSS/JS URLs carry ?v=<build stamp> so browsers fetch
+	 *  fresh files after each build: {{ build.cacheBust }}.
+	 *
+	 *  It used to be `addGlobalData("cacheBust", Date.now())` in this
+	 *  file. That runs ONCE, when the config loads: `eleventy --watch`
+	 *  re-reads the config only when the config file itself changes,
+	 *  so every rebuild in a watch session kept the same stamp — and
+	 *  with .htaccess caching CSS/JS for a year, Laragon served the
+	 *  old style.css until a hard refresh (reproduced 2026-10-25). A
+	 *  data FILE that exports a function (build.js) is re-run for
+	 *  every build, watch rebuilds included, so the stamp moved there.
 	 * ---------------------------------------------------------- */
-	eleventyConfig.addGlobalData("cacheBust", Date.now());
 
 	/* ----------------------------------------------------------
 	 *  JS BUNDLING
@@ -253,7 +264,7 @@ module.exports = function (eleventyConfig) {
 
 	// {{ "/assets/img/og-image.jpg" | v }}  →  "/assets/img/og-image.jpg?v=3f2a9c1e"
 	// Content-hash version for a file under src/: the first 8 hex characters
-	// of its md5. Unlike {{ cacheBust }} (a build timestamp that changes on
+	// of its md5. Unlike {{ build.cacheBust }} (a build timestamp that changes on
 	// every build), the URL only changes when the file's CONTENT changes.
 	// Used for og:image in head-meta.njk: Facebook, Telegram & co. cache a
 	// share image by its URL, so a replaced picture now gets a new URL by
@@ -264,7 +275,7 @@ module.exports = function (eleventyConfig) {
 	//
 	// Only for files that exist under src/. NOT for /assets/js/bundle.js: it
 	// is written by the JS BUNDLING hook above and has no src/ file, so it
-	// keeps {{ cacheBust }}. Full URLs (https://…) are returned unchanged; a
+	// keeps {{ build.cacheBust }}. Full URLs (https://…) are returned unchanged; a
 	// missing file is returned unchanged WITH a warning, so it can't slip
 	// through unversioned unnoticed.
 	// The hash is cached per file + modified time + size, so a --watch
@@ -273,7 +284,13 @@ module.exports = function (eleventyConfig) {
 	const versionWarned = new Set();
 	eleventyConfig.addFilter("v", (urlPath) => {
 		if (!urlPath || typeof urlPath !== "string" || /^([a-z]+:)?\/\//i.test(urlPath)) return urlPath;
-		const file = path.join(__dirname, "src", urlPath.split(/[?#]/)[0]);
+		// "/img/sprite.svg?x=1#logo" → base "/img/sprite.svg?x=1" + fragment "#logo".
+		// The version goes into the query; a fragment must stay LAST, or the
+		// browser reads "logo?v=…" as the fragment id and never sends ?v=.
+		const hashAt = urlPath.indexOf("#");
+		const base = hashAt === -1 ? urlPath : urlPath.slice(0, hashAt);
+		const fragment = hashAt === -1 ? "" : urlPath.slice(hashAt);
+		const file = path.join(__dirname, "src", base.split("?")[0]);
 		let stat;
 		try {
 			stat = fs.statSync(file);
@@ -286,7 +303,39 @@ module.exports = function (eleventyConfig) {
 		if (!versionCache.has(key)) {
 			versionCache.set(key, crypto.createHash("md5").update(fs.readFileSync(file)).digest("hex").slice(0, 8));
 		}
-		return `${urlPath}${urlPath.includes("?") ? "&" : "?"}v=${versionCache.get(key)}`;
+		return `${base}${base.includes("?") ? "&" : "?"}v=${versionCache.get(key)}${fragment}`;
+	});
+
+	// {% for s in extraScripts | checkExtraScripts(page.inputPath) %}
+	// Pass-through filter for base.njk's per-page scripts: returns the list
+	// unchanged and WARNS (once per page + script) about a third-party script
+	// that is not pinned. Every CDN file the boilerplate loads itself has an
+	// `integrity` hash (SRI, src/_data/cdn.js), so the browser refuses a
+	// tampered copy. `extraScripts` is the one place a page can add a script
+	// from another domain, so it gets the same check — a warning, not a hard
+	// stop, so an experiment still builds.
+	//   { src: "https://…", cdn: true }                         → warned
+	//   { src: "https://…", cdn: true, integrity, crossorigin }  → fine
+	//   "https://…" (plain string)                              → warned: the
+	//     string form is for LOCAL scripts and gets ?v= appended.
+	const isFullUrl = (u) => typeof u === "string" && /^([a-z]+:)?\/\//i.test(u);
+	const extraScriptsWarned = new Set();
+	eleventyConfig.addFilter("checkExtraScripts", (scripts, inputPath) => {
+		for (const s of scripts || []) {
+			let problem = "";
+			if (isFullUrl(s)) {
+				problem = "is a plain string, the form for LOCAL scripts (it gets ?v= appended). Use { src, cdn: true, integrity, crossorigin }";
+			} else if (s && typeof s === "object" && (s.cdn || isFullUrl(s.src)) && !s.integrity) {
+				problem = 'is a third-party script without integrity — add integrity + crossorigin: "anonymous" (SRI), or the page runs whatever that server sends';
+			}
+			if (!problem) continue;
+			const src = typeof s === "string" ? s : s.src;
+			const key = `${inputPath}|${src}`;
+			if (extraScriptsWarned.has(key)) continue;
+			extraScriptsWarned.add(key);
+			console.warn(`[extraScripts] ${inputPath}: ${src} ${problem}`);
+		}
+		return scripts;
 	});
 
 	// {{ entry.inputPath | lastModified }}  →  "2026-10-24T21:37:00+02:00"
@@ -421,7 +470,9 @@ module.exports = function (eleventyConfig) {
 		if (!leafLabel && topItem && topItem.dynamicChildren && collections) {
 			const collection = collections[topItem.dynamicChildren] || [];
 			const entry = collection.find((p) => p.url === url);
-			if (entry) leafLabel = entry.data && entry.data.title;
+			// Same label the menus use (navbar.njk, offcanvas-menu.njk):
+			// `navLabel:` front matter first, else `title:`.
+			if (entry && entry.data) leafLabel = entry.data.navLabel || entry.data.title;
 		}
 		if (!leafLabel) leafLabel = fallbackTitle || titleCase(parts[parts.length - 1]);
 
@@ -462,8 +513,10 @@ module.exports = function (eleventyConfig) {
 	 *  This only WARNS — the boilerplate itself is full of
 	 *  placeholders on purpose and must keep building. deploy.sh
 	 *  (and deploy-batch.mjs) refuse to upload while site.url is
-	 *  still an example.* placeholder, and check the BUILT
-	 *  robots.txt / security.txt / home page for leftovers; the rest
+	 *  still an example.* placeholder, check the BUILT
+	 *  robots.txt / security.txt for leftovers, the footer copyright
+	 *  values in site.json and the legal page's legalPlaceholder
+	 *  marker; the rest
 	 *  listed here is yours to clear before launch. `eleventy.before`
 	 *  runs at the start of every build and --watch rebuild; the
 	 *  same warning is printed only once per process.

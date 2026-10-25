@@ -28,9 +28,11 @@
  *  It also refuses the same targets deploy.sh refuses (placeholder
  *  site.json url, a DEPLOY_REMOTE that isn't this site's folder):
  *  an additive upload can't delete, but it can still overwrite
- *  ANOTHER site's index.html. And the same leftovers in the built
- *  files (example.com / yoursite.com in robots.txt or security.txt,
- *  a security.txt about to expire, "Your Name" on the home page).
+ *  ANOTHER site's index.html. And the same leftovers (example.com /
+ *  yoursite.com in the built robots.txt or security.txt, a
+ *  security.txt about to expire, the footer copyright still the
+ *  template value in site.json, the legal page still marked
+ *  legalPlaceholder).
  *
  *  Order of operations: checks → walk → build lines → LEAK CHECK →
  *  only then write. Any failure exits 1 without writing a batch, and
@@ -45,6 +47,12 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+// scripts/site-data.js is CommonJS (module.exports); an ES module loads it
+// through createRequire. It reads site.json — or site.js, if a project has
+// converted to that — the same way eleventy.config.js and deploy.sh do.
+const { loadSiteData } = createRequire(import.meta.url)("./site-data.js");
 
 // Project root = the folder above scripts/, wherever this is run from.
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -88,7 +96,11 @@ if (!remote) die("DEPLOY_REMOTE not set in .env or the environment.");
 if (!/^[A-Za-z0-9._/~-]+$/.test(remote)) die("DEPLOY_REMOTE contains invalid characters.");
 if (host && !/^[A-Za-z0-9.-]+$/.test(host)) die("DEPLOY_HOST contains invalid characters.");
 if (user && !/^[A-Za-z0-9._-]+$/.test(user)) die("DEPLOY_USER contains invalid characters.");
-if (key.includes('"')) die("DEPLOY_KEY may not contain quotes.");
+// DEPLOY_KEY ends up inside the printed `sftp -i "…"` command (and, in
+// deploy.sh, inside the ssh command lftp hands to a shell), so it gets an
+// allowlist like the others. Spaces are allowed: the default key lives under
+// /c/Users/<name>/.ssh/, and the path is quoted wherever it is used.
+if (key && !/^[A-Za-z0-9 ._/~:-]+$/.test(key)) die("DEPLOY_KEY contains invalid characters (allowed: letters, digits, space . _ / ~ : -).");
 
 // --- deploy.sh: read it once, minus its comments --------------------------------
 const deployShPath = path.join(ROOT, "deploy.sh");
@@ -129,11 +141,13 @@ if (remote.startsWith("/") && segs.length < MIN_REMOTE_SEGMENTS) {
 	die(`DEPLOY_REMOTE '${remote}' is only ${segs.length} folder(s) deep. That looks like an account root, not a site folder.`);
 }
 
+let site = {};
 let siteHost = "";
 try {
-	siteHost = new URL(JSON.parse(readFileSync(path.join(ROOT, "src", "_data", "site.json"), "utf8")).url).hostname;
+	site = loadSiteData();
+	siteHost = new URL(site.url).hostname;
 } catch {
-	die('could not read a valid "url" from src/_data/site.json.');
+	die('could not read a valid "url" from src/_data/site.json (or site.js).');
 }
 if (/(^|\.)example\.(com|org|net)$/.test(siteHost)) {
 	die(`src/_data/site.json "url" is still the placeholder (${siteHost}). Set the real domain first.`);
@@ -180,8 +194,22 @@ if (expiresMatch) {
 		);
 	}
 }
-if (/Your Name|yoursite\.com/.test(builtText("index.html"))) {
-	die(`${rel(LOCAL_DIR)}/index.html still says 'Your Name' or yoursite.com (site.json footer.copyrightName / copyrightUrl).`);
+// Footer placeholders are read from site.json itself, not grepped out of the
+// built home page: a contact form whose label says "Your Name" is page copy,
+// not a misconfiguration, and used to block every deploy.
+const footer = site.footer || {};
+const footerPlaceholders = [
+	footer.copyrightName === "Your Name" && "footer.copyrightName",
+	/yoursite\.com/i.test(footer.copyrightUrl || "") && "footer.copyrightUrl",
+].filter(Boolean);
+if (footerPlaceholders.length) {
+	die(`src/_data/site.json still has the template value in ${footerPlaceholders.join(" and ")}. Fix and rebuild.`);
+}
+// The legal page carries this HTML comment while src/legal.njk still has
+// legalPlaceholder: true — which also keeps it noindex. A finished site that
+// forgot the switch would launch with its privacy page deindexed.
+if (/<!-- legalPlaceholder: true/.test(builtText("legal/index.html"))) {
+	die(`${rel(LOCAL_DIR)}/legal/index.html is still the placeholder legal text: set legalPlaceholder: false in src/legal.njk (after replacing the text) and rebuild.`);
 }
 
 // --- The exclude list, read straight out of deploy.sh ---------------------------
@@ -310,14 +338,12 @@ if (skipped.length) {
 if (leaks.length) {
 	console.error(`deploy-batch: ABORT. ${leaks.length} batch path(s) match an exclude:`);
 	for (const l of leaks.slice(0, 20)) console.error("  " + l);
-	console.error("files", files.length, "leak? YES-ABORT");
 	die("leak check failed.");
 }
 
 mkdirSync(path.dirname(OUT_FILE), { recursive: true });
 writeFileSync(OUT_FILE, lines.join("\n") + "\n");
-console.log(`deploy-batch: ${dirs.length} folders, ${files.length} files → ${rel(OUT_FILE)}`);
-console.log("files", files.length, "leak? clean");
+console.log(`deploy-batch: ${dirs.length} folders, ${files.length} files → ${rel(OUT_FILE)} (leak check: clean)`);
 
 // --- How to upload it ---------------------------------------------------------------
 // Run from the project root: the put lines use paths relative to it. Same ssh
