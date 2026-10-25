@@ -10,70 +10,151 @@
 		 label     — display text (required)
 		 url       — link href (required for plain links)
 		 icon      — Bootstrap Icon class, e.g. "bi-folder2-open"
+		             (with or without the "bi " base class — the
+		             template adds it once either way)
 		 external  — true to open in new tab with rel="noopener"
 		 disabled  — true to render as disabled
 		 children  — array of sub-items (makes this a dropdown)
+		 dynamicChildren — name of an Eleventy collection (e.g. "tools")
+		             whose pages become the dropdown items instead of
+		             a hand-kept `children` list. Wins over `children`.
+		 indexLabel — text of the parent's own link at the top of the
+		             dropdown (default "All <label>")
+
+	 CHILDREN COME IN TWO SHAPES (the template branches on child.data):
+		 - static, from nav.js:   { label, url, icon, external, disabled, group }
+		 - a collection entry:    { url, data: { title, navLabel, icon, group, … } }
+		   label = the page's `navLabel:` front matter, else its `title:`.
+		 `group` (nav.js property / page front matter) is an identity
+		 token, never printed: a divider is drawn wherever two NEIGHBOURING
+		 children have a different group. Sorting is the job of nav.js / the
+		 collection, so same-group items arrive next to each other.
+		 The previous child is read as children[loop.index0 - 1] instead of
+		 being remembered in a variable, because a Nunjucks `{% set %}`
+		 inside a `{% for %}` does NOT survive to the next round of the loop.
+
+	 ACTIVE STATE:
+		 - exact match (page.url == item.url) → .active + aria-current="page"
+		 - section match (/about/team/ under /about/) → .active +
+		   aria-current="true" ("current item in a set", not "this page").
+		   "/" and external links never section-match.
+
+	 DISABLED ITEMS follow Bootstrap's pattern: no href (so the link
+	 leaves the Tab order and can't be followed with Enter) plus
+	 aria-disabled="true" so screen readers announce it. The .disabled
+	 class alone only blocks the mouse (pointer-events: none).
+
+	 ICONS are decorative (the label is right next to them), so every
+	 <i class="bi"> gets aria-hidden="true" — icon fonts are private-use
+	 characters that screen readers may otherwise try to read.
+
+	 COLOUR: site.navbar.bg / site.navbar.theme (site.json) pick the
+	 background utility and the navbar's own colour mode. Default is
+	 "bg-primary" + "dark" (white text). With a light-primary Bootswatch
+	 theme (Minty, Brite…) white fails contrast: switch to
+	 { "bg": "bg-body-tertiary", "theme": "light" } or
+	 { "bg": "bg-dark", "theme": "dark" } instead of editing this file.
 
 	 The theme toggle is included separately — it's a UI control,
 	 not a navigation link, so it lives in its own partial.
 	 ============================================================
 #}
 
-<nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Main">
+<nav class="navbar navbar-expand-lg fixed-top {{ site.navbar.bg or 'bg-primary' }}" data-bs-theme="{{ site.navbar.theme or 'dark' }}" aria-label="Main">
 	<div class="container">
 
 		<a href="/" class="navbar-brand">{{ site.name }}</a>
 
+		{# id="main-nav" is an intentional hook (nothing in the boilerplate
+		   uses it yet) for derived-site CSS/JS or an aria-controls target. #}
 		<div class="d-none d-lg-flex flex-grow-1" id="main-nav">
 			<ul class="navbar-nav ms-auto align-items-lg-center">
 
 				{# --- Menu items from nav.js --- #}
 				{% for item in nav %}
-					{% if item.children %}
+					{# Resolve children: dynamicChildren beats static children. #}
+					{% set children = item.children %}
+					{% if item.dynamicChildren %}
+						{% set children = collections[item.dynamicChildren] %}
+					{% endif %}
+					{% if children and children.length %}
 						{# Dropdown item — active if any child URL matches current page #}
 						{% set isParentActive = (page.url == item.url) %}
-						{% for child in item.children %}
+						{% for child in children %}
 							{% if page.url == child.url %}{% set isParentActive = true %}{% endif %}
 						{% endfor %}
+						{# The toggle is a role="button", not a link to a page, so it
+						   gets only the .active styling. aria-current goes on the
+						   matching dropdown-item below instead. #}
 						<li class="nav-item dropdown">
 							<a class="nav-link dropdown-toggle{% if isParentActive %} active{% endif %}" href="#" role="button"
-								data-bs-toggle="dropdown" aria-expanded="false"
-								{% if isParentActive %}aria-current="page"{% endif %}>
-								{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
+								data-bs-toggle="dropdown" aria-expanded="false">
+								{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %}
 								{{ item.label }}
 							</a>
 							<ul class="dropdown-menu dropdown-menu-end">
 								{% if item.url %}
 									<li>
 										<a class="dropdown-item{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
-											href="{{ item.url }}">
-											{% if item.icon %}<i class="{{ item.icon }} me-2"></i>{% endif %}
-											All {{ item.label }}
+											{% if item.disabled %}aria-disabled="true"{% else %}href="{{ item.url }}"{% endif %}
+											{% if page.url == item.url %}aria-current="page"{% endif %}>
+											{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-2" aria-hidden="true"></i>{% endif %}
+											{{ item.indexLabel or ("All " ~ item.label) }}
 										</a>
 									</li>
 									<li><hr class="dropdown-divider"></li>
 								{% endif %}
-								{% for child in item.children %}
+								{% for child in children %}
+									{# Static child (nav.js) or collection entry (child.data) —
+									   see CHILDREN COME IN TWO SHAPES at the top. A page in a
+									   collection is never disabled or external. #}
+									{% if child.data %}
+										{% set childLabel = child.data.navLabel or child.data.title or child.url %}
+										{% set childIcon = child.data.icon %}
+										{% set childGroup = child.data.group %}
+										{% set childDisabled = false %}
+										{% set childExternal = false %}
+									{% else %}
+										{% set childLabel = child.label %}
+										{% set childIcon = child.icon %}
+										{% set childGroup = child.group %}
+										{% set childDisabled = child.disabled %}
+										{% set childExternal = child.external %}
+									{% endif %}
+									{# Group divider: only where this child's group differs from the
+									   previous child's. Not before the first child — the "All …"
+									   link above already has its divider. #}
+									{% if loop.index0 > 0 %}
+										{% set prevChild = children[loop.index0 - 1] %}
+										{% set prevGroup = prevChild.data.group if prevChild.data else prevChild.group %}
+										{% if prevGroup != childGroup %}<li><hr class="dropdown-divider"></li>{% endif %}
+									{% endif %}
 									<li>
-										<a class="dropdown-item{% if child.disabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
-											href="{{ child.url }}"
-											{% if child.external %}target="_blank" rel="noopener"{% endif %}>
-											{% if child.icon %}<i class="{{ child.icon }} me-2"></i>{% endif %}
-											{{ child.label }}
+										<a class="dropdown-item{% if childDisabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
+											{% if childDisabled %}aria-disabled="true"{% else %}href="{{ child.url }}"{% endif %}
+											{% if page.url == child.url %}aria-current="page"{% endif %}
+											{% if childExternal %}target="_blank" rel="noopener"{% endif %}>
+											{% if childIcon %}<i class="bi {{ childIcon | replace('bi ', '') }} me-2" aria-hidden="true"></i>{% endif %}
+											{{ childLabel }}
+											{% if childExternal %}<span class="visually-hidden">(opens in a new tab)</span>{% endif %}
 										</a>
 									</li>
 								{% endfor %}
 							</ul>
 						</li>
 					{% else %}
-						{# Plain link #}
+						{# Plain link — isCurrent = this exact page, isSection = a page
+						   below it (e.g. /about/team/ lights up "About"). #}
+						{% set isCurrent = (page.url == item.url) %}
+						{% set isSection = (not isCurrent and item.url and not item.external and item.url != "/" and page.url and page.url.indexOf(item.url) == 0) %}
 						<li class="nav-item mx-1">
-							<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
-								href="{{ item.url }}"
-								{% if page.url == item.url %}aria-current="page"{% endif %}
+							<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if isCurrent or isSection %} active{% endif %}"
+								{% if item.disabled %}aria-disabled="true"{% else %}href="{{ item.url }}"{% endif %}
+								{% if isCurrent %}aria-current="page"{% elif isSection %}aria-current="true"{% endif %}
 								{% if item.external %}target="_blank" rel="noopener"{% endif %}>
-								{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
+								{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %}
 								{{ item.label }}
+								{% if item.external %}<span class="visually-hidden">(opens in a new tab)</span>{% endif %}
 							</a>
 						</li>
 					{% endif %}
@@ -89,7 +170,7 @@
 		<button class="navbar-toggler ms-2" type="button" id="dd-offcanvas-toggle"
 			data-bs-toggle="offcanvas" data-bs-target="#dd-offcanvas"
 			aria-controls="dd-offcanvas" aria-label="Toggle menu">
-			<i class="bi bi-list"></i>
+			<i class="bi bi-list" aria-hidden="true"></i>
 		</button>
 
 	</div>

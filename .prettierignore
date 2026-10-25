@@ -1,0 +1,22 @@
+# ============================================================
+#  .prettierignore — files Prettier must never reformat
+# ============================================================
+#  Same syntax as .gitignore. Prettier 3 ALSO skips everything
+#  in .gitignore (_site/, _temp/, node_modules/ …), so those
+#  don't need repeating here.
+
+# Nunjucks templates. Prettier has no Nunjucks parser, and many of
+# our .njk files aren't HTML at all (htaccess.njk = Apache config,
+# robots.njk, sitemap.njk, security.txt.njk, site.webmanifest.njk).
+# Forcing the HTML parser on them (as an old .prettierrc override
+# did) collapses Apache directives onto one line — Apache then
+# answers EVERY request with 500 — and flattens robots.txt and the
+# hand-formatted teaching comments. If you want .njk formatting
+# later, try a Nunjucks/Jinja-aware plugin on a branch first.
+*.njk
+
+# Kept exactly as delivered: design exports, third-party reference
+# docs, and archived snapshots of old code.
+docs/design/
+docs/reference/
+archive/

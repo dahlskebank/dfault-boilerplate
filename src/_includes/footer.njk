@@ -1,24 +1,51 @@
+{# --- Network link macro (used by the brand-link rows below) ---
+	 A Nunjucks macro is a small reusable template function: define it
+	 once, call it like {{ footerLink(link, "text-end") }}.
+
+	 SELF-LINK GUARD: when the link points at THIS site (same hostname
+	 as site.url, ignoring "www."), it renders as plain text instead of
+	 a link that would open the site itself in a new tab. That's what
+	 lets dfault.it, dahlskebank.com, danieldahl.com and dxd.no use the
+	 same footer without linking to themselves. The `hostname` filter
+	 lives in eleventy.config.js. #}
+{%- set selfHost = site.url | hostname | replace("www.", "") -%}
+{%- macro footerLink(link, align) -%}
+{%- if (link.url | hostname | replace("www.", "")) == selfHost -%}
+<span class="{{ align }} text-nowrap" title="{{ link.title }}">{{ link.label }}</span>
+{%- else -%}
+<a class="{{ align }} text-nowrap" href="{{ link.url }}" target="_blank" rel="noopener" title="{{ link.title }}">{{ link.label }}</a>
+{%- endif -%}
+{%- endmacro -%}
+
 <footer class="mt-auto py-4 py-lg-5 border-top text-center small">
+	{# Separator icons (bi-dot / bi-slash / bi-arrow) are decorative:
+	   aria-hidden="true" keeps screen readers from reading the icon-font
+	   glyphs. Where an icon carries meaning (©, the year range) a
+	   visually-hidden text twin says it in words. #}
 	<p class="pb-1">
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
 			<a class="text-end text-nowrap" href="/legal/#privacy-policy">Privacy Policy</a>
-			<i class="bi bi-dot"></i>
+			<i class="bi bi-dot" aria-hidden="true"></i>
 			<a class="text-start text-nowrap" href="/legal/#cookie-policy">Cookie Policy</a>
 		</span>
-		<i class="bi bi-dot d-none d-sm-inline"></i>
+		<i class="bi bi-dot d-none d-sm-inline" aria-hidden="true"></i>
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
 			<a class="text-end text-nowrap" href="/legal/#terms-of-service">Terms of Service</a>
-			<i class="bi bi-dot"></i>
+			<i class="bi bi-dot" aria-hidden="true"></i>
 			<a class="text-start text-nowrap" href="/legal/">Legal Notice</a>
 		</span>
 	</p>
 
 	<p class="mb-0">
-		{# --- Copyright line --- #}
+		{# --- Copyright line ---
+		   Below lg the word "Copyright" is hidden and only the icons show,
+		   so the © and the en dash also exist as visually-hidden text
+		   (.d-lg-none drops the © twin at lg+, where the word is visible,
+		   so screen readers don't hear "Copyright copyright"). #}
 		<span class="d-none d-lg-inline">Copyright</span>
-		<i class="bi bi-c-circle"></i>
-		{{ site.footer.startYear }} <i class="bi bi-activity"></i> {% year %}
-		<i class="bi bi-arrow-right-short"></i>
+		<i class="bi bi-c-circle" aria-hidden="true"></i><span class="visually-hidden d-lg-none">©</span>
+		{{ site.footer.startYear }} <i class="bi bi-activity" aria-hidden="true"></i><span class="visually-hidden">–</span> {% year %}
+		<i class="bi bi-arrow-right-short" aria-hidden="true"></i>
 		<a class="text-nowrap" href="{{ site.footer.copyrightUrl }}" title="{{ site.footer.copyrightName }} | {{ site.description }}">{{ site.footer.copyrightName }}</a><span class="d-none d-lg-inline">. All rights reserved.</span>
 		<small>{{ site.version }}</small>
 		<br />
@@ -27,23 +54,26 @@
 		   Same dd-footer-row pattern as the legal row above (see style.css §2.3).
 		   On mobile each <span> becomes a 1fr / auto / 1fr grid with the bi-slash
 		   pinned to horizontal center; on ≥ sm the spans collapse to inline so the
-		   four links read as one line. The bi-slash between the two spans is
+		   links read as one line. The bi-slash between the spans is
 		   d-none d-sm-inline so it only joins the line on desktop.
 
-		   Pairing is hard-coded (links[0]+[1] for row 1, links[2]+[3] for row 2)
-		   because site.footer.links has a stable count of 4. If you change that
-		   count, add or remove pair-rows manually here. #}
-
+		   `batch(2)` is a Nunjucks filter that chops the list into pairs:
+		   [a, b, c, d] → [[a, b], [c, d]]. So ANY number of links works —
+		   an odd count just leaves the last row with one centred link
+		   (style.css §2.3 handles that with :only-child). #}
+		{%- for pair in site.footer.links | batch(2) %}
 		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
-			<a class="text-end text-nowrap" href="{{ site.footer.links[0].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[0].title }}">{{ site.footer.links[0].label }}</a>
-			<i class="bi bi-slash"></i>
-			<a class="text-start text-nowrap" href="{{ site.footer.links[1].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[1].title }}">{{ site.footer.links[1].label }}</a>
+			{%- if pair[1] %}
+			{{ footerLink(pair[0], "text-end") }}
+			<i class="bi bi-slash" aria-hidden="true"></i>
+			{{ footerLink(pair[1], "text-start") }}
+			{%- else %}
+			{{ footerLink(pair[0], "text-center") }}
+			{%- endif %}
 		</span>
-		<i class="bi bi-slash d-none d-sm-inline"></i>
-		<span class="d-grid d-sm-inline align-items-center gap-2 dd-footer-row">
-			<a class="text-end text-nowrap" href="{{ site.footer.links[2].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[2].title }}">{{ site.footer.links[2].label }}</a>
-			<i class="bi bi-slash"></i>
-			<a class="text-start text-nowrap" href="{{ site.footer.links[3].url }}" target="_blank" rel="noopener" title="{{ site.footer.links[3].title }}">{{ site.footer.links[3].label }}</a>
-		</span>
+		{%- if not loop.last %}
+		<i class="bi bi-slash d-none d-sm-inline" aria-hidden="true"></i>
+		{%- endif %}
+		{%- endfor %}
 	</p>
 </footer>

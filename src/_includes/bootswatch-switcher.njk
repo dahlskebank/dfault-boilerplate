@@ -8,40 +8,61 @@
 	 in offcanvas-menu.njk.
 
 	 To disable for production, set bootswatchSwitcher: false
-	 in src/_data/site.json.
+	 in src/_data/site.json. The same switch drops
+	 bootswatch-switcher.js from the bundle and the small restore
+	 script from <head> (base.njk).
 
-	 REQUIRES: bootswatch-switcher.js loaded after this partial.
+	 REQUIRES: bootswatch-switcher.js (in /assets/js/bundle.js) and
+	 the window.ddBootswatchSheets map that base.njk writes into
+	 <head> from src/_data/cdn.js (URL + SRI hash per theme).
+
+	 THE LIST comes from cdn.js too — one button per theme there,
+	 so a Bootswatch version bump is an edit in ONE file. The label
+	 is the theme name with its first letter capitalised
+	 (Nunjucks' `capitalize` filter: "darkly" → "Darkly").
+
+	 COLLAPSE, NOT DROPDOWN — deliberate (ported from the fg project):
+	 27 buttons is a lot of menu to scroll past, so the list is
+	 folded away behind a toggle. It uses Bootstrap's `collapse`
+	 rather than `dropdown` because a dropdown closes the moment
+	 you click anything inside it, which is exactly wrong for a
+	 style switcher — you want to click Cyborg, look, click Vapor,
+	 look again, without re-opening the list every time. Collapse
+	 ignores clicks on its contents and stays put.
+
+	 No JS of our own for the collapse: data-bs-toggle="collapse"
+	 is handled by the Bootstrap bundle that already powers the
+	 offcanvas. Closed on every page load; picking a theme doesn't
+	 navigate, so the list stays open while you try themes.
+
+	 The header is a real <button> with aria-expanded (Bootstrap
+	 updates it), so it is keyboard-reachable and announces whether
+	 the list is open. It is styled like the other section labels
+	 by .dd-offcanvas-section-toggle (style.css §4.4) but does NOT
+	 carry the .dd-offcanvas-section class: high-contrast.css dims
+	 that class to 70% opacity, which is meant for passive labels,
+	 not for a control.
+
+	 Options are toggle buttons (aria-pressed, set by the JS) in a
+	 role="group" labelled by the header.
 	 ============================================================
 #}
 
 <div class="dd-offcanvas-divider"></div>
-<div class="dd-offcanvas-section">
-	<i class="bi bi-palette-fill me-1"></i> Bootswatch
+
+<button type="button"
+	class="dd-offcanvas-section-toggle collapsed"
+	id="dd-bootswatch-toggle"
+	data-bs-toggle="collapse" data-bs-target="#dd-bootswatch-collapse"
+	aria-expanded="false" aria-controls="dd-bootswatch-collapse">
+	<span><i class="bi bi-palette-fill me-1" aria-hidden="true"></i> Bootswatch</span>
+	<i class="bi bi-chevron-down dd-offcanvas-section-caret" aria-hidden="true"></i>
+</button>
+
+<div class="collapse" id="dd-bootswatch-collapse" role="group" aria-labelledby="dd-bootswatch-toggle">
+	<button type="button" class="nav-link dd-bootswatch-option" data-theme="default" aria-pressed="false">Bootstrap (Default)</button>
+	{# `for key, value in object` loops over an object's entries; only the key (theme name) is needed here. #}
+	{% for name, sheet in cdn.bootswatch.themes %}
+	<button type="button" class="nav-link dd-bootswatch-option" data-theme="{{ name }}" aria-pressed="false">{{ name | capitalize }}</button>
+	{% endfor %}
 </div>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="default">Bootstrap (Default)</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="brite">Brite</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="cerulean">Cerulean</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="cosmo">Cosmo</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="cyborg">Cyborg</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="darkly">Darkly</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="flatly">Flatly</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="journal">Journal</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="litera">Litera</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="lumen">Lumen</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="lux">Lux</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="materia">Materia</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="minty">Minty</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="morph">Morph</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="pulse">Pulse</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="quartz">Quartz</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="sandstone">Sandstone</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="simplex">Simplex</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="sketchy">Sketchy</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="slate">Slate</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="solar">Solar</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="spacelab">Spacelab</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="superhero">Superhero</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="united">United</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="vapor">Vapor</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="yeti">Yeti</button>
-<button type="button" class="nav-link dd-bootswatch-option" data-theme="zephyr">Zephyr</button>

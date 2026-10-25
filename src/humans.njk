@@ -3,16 +3,30 @@ permalink: /humans.txt
 eleventyExcludeFromCollections: true
 layout: false
 ---
+{#- Plain text, not HTML: `| safe` stops Nunjucks' HTML auto-escaping
+	(otherwise "Dahl's" would print as "Dahl&#39;s").
+	Language is looked up from site.lang ("nb-NO" → "nb" → Norwegian
+	Bokmål); a code that isn't in the list is printed as-is. -#}
+{%- set languageNames = {
+	"en": "English",
+	"nb": "Norwegian (Bokmål)",
+	"nn": "Norwegian (Nynorsk)",
+	"no": "Norwegian",
+	"sv": "Swedish",
+	"da": "Danish",
+	"de": "German"
+} -%}
+{%- set langCode = ((site.lang or "en") | lower).split("-")[0] -%}
 /* TEAM */
-Developer: {{ site.author.name }}
-Site: {{ site.author.url }}
-Contact: {{ site.url }}
+Developer: {{ site.author.name | safe }}
+Site: {{ site.author.url | safe }}
+Contact: {{ site.url | safe }}
 
 /* SITE */
 Last update: {% year %}
 Standards: HTML5, CSS3
-Language: English
-Components: Eleventy, Nunjucks, Bootstrap 5, Bootstrap Icons
+Language: {{ (languageNames[langCode] or site.lang) | safe }}
+Components: Eleventy, Nunjucks, Bootstrap 5, Bootstrap Icons, PhotoSwipe
 Doctype: HTML5
 
 /* THANKS */

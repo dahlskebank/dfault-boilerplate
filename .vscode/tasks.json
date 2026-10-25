@@ -1,0 +1,24 @@
+// VS Code tasks — Ctrl+Shift+P → "Tasks: Run Task" → Deploy.
+// Tracked in git so every clone of the boilerplate gets the task.
+// No `options.shell` needed: VS Code runs `npm run deploy` in your
+// default terminal, and npm itself starts the script in Git Bash
+// because .npmrc sets `script-shell` (deploy.sh is a bash script).
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy",
+      "type": "shell",
+      "command": "npm run deploy",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ]
+}

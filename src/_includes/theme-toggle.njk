@@ -5,23 +5,48 @@
 
 	 Navbar dropdown with theme options from src/_data/themes.js.
 	 The JS (theme-toggle.js) binds to "dd-theme-option" class.
+
+	 TRIGGER: a real <button>. Bootstrap supports
+	 <button class="nav-link dropdown-toggle"> for exactly this;
+	 the old <a href="#" role="button"> opened a useless "#" tab
+	 on middle-click.
+
+	 TRIGGER ICON: all three icons are rendered, and style.css §4.4
+	 shows the one that matches <html>: sun = light, moon = dark,
+	 half circle = a high-contrast mode. theme-init.njk sets that
+	 state before first paint, so the icon is right at once (it
+	 used to start as the half circle and flip at DOMContentLoaded).
+	 Which CHOICE is active — including Auto — is in the aria-label,
+	 which theme-toggle.js extends to "Change theme (current: …)".
+
+	 OPTIONS are toggle buttons: aria-pressed="false" here, and
+	 theme-toggle.js sets "true" on the selected one. Icons are
+	 decorative (aria-hidden), the label is the text next to them.
 	 ============================================================
 #}
 
 <li class="nav-item dropdown mx-1">
-	<a class="nav-link dropdown-toggle" href="#" role="button"
+	<button type="button" class="nav-link dropdown-toggle" id="dd-theme-trigger"
 		data-bs-toggle="dropdown" aria-expanded="false"
 		aria-label="Change theme">
-		<i class="bi bi-circle-half" id="dd-theme-icon"></i>
+		{%- for theme in themes %}{% if theme.id == "dark" or theme.id == "light" %}
+		<i class="bi {{ theme.icon | replace('bi ', '') }} dd-theme-icon dd-theme-icon-{{ theme.id }}" aria-hidden="true"></i>
+		{%- endif %}{% endfor %}
+		<i class="bi bi-circle-half dd-theme-icon dd-theme-icon-hc" aria-hidden="true"></i>
+		{# Disabled: this label could never show. It hides from lg up, and the
+		   whole menu (#main-nav in navbar.njk) only shows from lg up. If you
+		   bring it back, use the same words as the aria-label above (WCAG
+		   2.5.3 Label in Name), e.g. "Theme" in both.
 		<span class="d-lg-none ms-2">Toggle Theme</span>
-	</a>
+		#}
+	</button>
 	<ul class="dropdown-menu dropdown-menu-end">
 		{% set prevGroup = "" %}
 		{% for theme in themes %}
 			{% if prevGroup and prevGroup != theme.group %}
 				<li><hr class="dropdown-divider"></li>
 			{% endif %}
-			<li><button type="button" class="dropdown-item dd-theme-option" data-theme="{{ theme.id }}"><i class="{{ theme.icon }} me-2"></i>{{ theme.label }}</button></li>
+			<li><button type="button" class="dropdown-item dd-theme-option" data-theme="{{ theme.id }}" aria-pressed="false"><i class="bi {{ theme.icon | replace('bi ', '') }} me-2" aria-hidden="true"></i>{{ theme.label }}</button></li>
 			{% set prevGroup = theme.group %}
 		{% endfor %}
 	</ul>

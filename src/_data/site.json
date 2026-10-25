@@ -13,52 +13,161 @@
 		"============================================================"
 	],
 
+	"_comment_identity": "Change these first on a new site. url has NO trailing slash — templates append page paths (\"https://example.com\" + \"/about/\").",
 	"name": "My Site",
 	"url": "https://example.com",
 	"description": "A short description of your site",
+
+	"_comment_locale": [
+		"Same idea, two formats — so both live here:",
+		"lang   = BCP 47 tag with a hyphen (en, nb, nb-NO) → <html lang>, JSON-LD inLanguage, manifest lang, humans.txt.",
+		"locale = Open Graph's language_TERRITORY with an UNDERSCORE (en_US, nb_NO) → og:locale. A page can override it with `locale:` front matter."
+	],
 	"lang": "en",
+	"locale": "en_US",
 
-	"_comment_version": "Footer version. Bump with `npm run bump:patch|minor|major`. The global Claude Code Stop hook reminds you if src/ changes go uncommitted without a bump.",
-	"version": "v1.1.2",
+	"_comment_alternateName": "Other names Google may show as the site name in search results (an acronym, short form or the domain), e.g. [\"D-FAULT\", \"dfault.it\"]. Goes in the home page's WebSite JSON-LD only. [] = none.",
+	"alternateName": [],
 
+	"_comment_version": "Footer version. Bump with `npm run bump:patch|minor|major`. (On Daniel's machine, a global Claude Code Stop hook reminds you if src/ changes go uncommitted without a bump.)",
+	"version": "v1.2.0",
+
+	"_comment_author": [
+		"Who BUILT the website — Daniel on every site, also when the site is ABOUT someone else (credit the subject in the page content, not here).",
+		"Used by <meta name=\"author\">, humans.txt, llms.txt and the JSON-LD Person node on every page.",
+		"id = one stable URI for the same person on EVERY site (JSON-LD @id), so search engines can see that all the sites share one author.",
+		"sameAs = other pages that are unmistakably the same person (Daniel's site network)."
+	],
 	"author": {
-		"name": "Your Name",
-		"url": "https://yoursite.com"
+		"name": "Daniel Dahl",
+		"url": "https://danieldahl.com",
+		"id": "https://danieldahl.com/#person",
+		"sameAs": ["https://dahlskebank.com", "https://danieldahl.com", "https://dxd.no", "https://dfault.it"]
 	},
 
-	"_comment_security": "Per RFC 9116. Contact and expires are required. Update expires before the date passes — convention is 12 months from issuance.",
+	"_comment_publisher": [
+		"Who OWNS the site → JSON-LD WebSite.publisher (home page) and the mainEntity of a `schemaType: ProfilePage` page.",
+		"Leave id empty (Daniel's own sites): the author above is also the publisher — no extra node.",
+		"Client/company site: type \"Organization\", its own id (e.g. https://client.no/#organization), name, url, logo (square PNG/JPG ≥112x112 px, root-relative or full URL) and its profiles in sameAs.",
+		"type \"Person\" uses image (a portrait) instead — logo is only valid on an Organization."
+	],
+	"publisher": {
+		"type": "Organization",
+		"id": "",
+		"name": "",
+		"url": "",
+		"logo": "",
+		"image": "",
+		"sameAs": []
+	},
+
+	"_comment_security": [
+		"Per RFC 9116 (/.well-known/security.txt). contact is required.",
+		"expires: \"\" = build date + 1 year, recomputed on every build (src/_data/build.js). Set a fixed ISO date (e.g. \"2027-05-06T00:00:00.000Z\") instead if you want the file to go stale as a reminder to re-check the contact — RFC 9116 recommends less than a year ahead."
+	],
 	"security": {
 		"contact": "mailto:hello@example.com",
-		"expires": "2027-05-06T00:00:00.000Z",
+		"expires": "",
 		"preferredLanguages": "en, no",
 		"policy": ""
 	},
 
-	"_comment_seo": "These are used in head-meta.njk for SEO and social sharing cards.",
-	"themeColor": "#212529",
+	"_comment_robots": [
+		"robots = default <meta name=\"robots\"> for every page; a page overrides it with its own `robots:` front matter.",
+		"\"index, follow\" alone is Google's default and does nothing; max-image-preview:large allows big image previews (Search, Discover).",
+		"A page whose robots contains \"noindex\" (e.g. robots: \"noindex, follow\") is ALSO left out of sitemap.xml and llms.txt.",
+		"noindexSite = true for a staging/private site: every page gets noindex, nofollow (meta tag + X-Robots-Tag header from .htaccess) and sitemap.xml/llms.txt are emptied/switched off — but robots.txt keeps crawling ALLOWED, because a blocked crawler never sees the noindex."
+	],
+	"robots": "index, follow, max-image-preview:large",
+	"noindexSite": false,
+
+	"_comment_ai": [
+		"AI crawler policy → src/robots.njk (bot names: src/_data/aiBots.js). true = allowed. Default: everything allowed (be found, cited AND trained on).",
+		"train:     GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, Meta-ExternalAgent, CCBot. NOTE Google-Extended also controls Gemini-app grounding, so false also drops the site from Gemini answers (Google Search and AI Overviews are unaffected).",
+		"search:    OAI-SearchBot, Claude-SearchBot, PerplexityBot, Meta-WebIndexer. false = not cited in those assistants' search answers.",
+		"userFetch: ChatGPT-User, Claude-User, Perplexity-User, Meta-ExternalFetcher (a person asked an assistant to open a page). OpenAI, Perplexity and Meta say these may ignore robots.txt, so false is a request, not a block.",
+		"contentSignal: also print Cloudflare's Content-Signal line (search/ai-input/ai-train = yes|no) — a stated preference nobody is obliged to honour.",
+		"Never blocked here: Googlebot, Bingbot, Applebot, facebookexternalhit — they feed Google/Bing/Siri (incl. AI Overviews and Copilot) and link previews. Opting out of Google AI Overviews/AI Mode is a Search Console setting, not robots.txt."
+	],
+	"aiPolicy": {
+		"train": true,
+		"search": true,
+		"userFetch": true,
+		"contentSignal": true
+	},
+
+	"_comment_llms": "llmsTxt = publish /llms.txt (https://llmstxt.org): a Markdown map of the site for AI tools, built from the pages (noindex pages, `llms: false` pages and demo pages left out). No big AI provider officially reads it and Google ignores it — it's cheap, so it's on. false = not built.",
+	"llmsTxt": true,
+
+	"_comment_seo": [
+		"Share image + browser colour → head-meta.njk (Open Graph, X card, JSON-LD) and site.webmanifest.njk.",
+		"themeColor tints Chrome's address bar on Android (and an installed app's title bar). Match the navbar: the boilerplate navbar is bg-primary = #0d6efd in plain Bootstrap 5.3 — change both together if you pick a Bootswatch theme or another navbar colour.",
+		"ogImage: landscape 1200x630, under ~300 KB (WhatsApp skips bigger ones), not just a logo. Facebook/Telegram cache share images by URL, so head-meta.njk adds ?v=<hash of the file's content> (the `v` filter in eleventy.config.js): a new picture under the same name gets a new URL by itself. (.htaccess lets browsers keep images for a month.)",
+		"ogImageAlt describes the PICTURE, not the page. Width/height/type must match the real file. A page with its own ogImage can set ogImageAlt/ogImageWidth/ogImageHeight/ogImageType in front matter."
+	],
+	"themeColor": "#0d6efd",
 	"ogImage": "/assets/img/og-image.jpg",
+	"ogImageAlt": "dfault — Eleventy + Bootstrap 5 Boilerplate: glowing neon logo next to stacked translucent layers",
+	"ogImageWidth": 1200,
+	"ogImageHeight": 630,
+	"ogImageType": "image/jpeg",
+
+	"_comment_social": "Optional, \"\" = tag left out. x = X/Twitter handle WITHOUT @ → twitter:site. fediverse = Mastodon handle like @user@instance → fediverse:creator (Mastodon only shows the byline if that account lists this domain under Edit profile → Verification → Author attribution).",
+	"social": {
+		"x": "",
+		"fediverse": ""
+	},
 
 	"_comment_analytics": "Google Analytics measurement ID. Leave empty string to disable.",
 	"gaId": "",
 
-	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit. Set to 'default' for plain Bootstrap. Set bootswatchSwitcher to false to hide the theme switcher in production.",
-	"defaultBootswatchTheme": "default",
-	"bootswatchSwitcher": true,
+	"_comment_gaConsent": [
+		"How GA waits for the visitor — only matters when gaId is set. Your call per site:",
+		"\"implied\" = GA loads on the first page view and the cookie toast only informs (the boilerplate's behaviour so far).",
+		"\"required\" = opt-in: GA loads only after Accept in the cookie toast (Accept / Decline, no X). Decline or no answer = GA never loads; Decline after an earlier Accept switches GA off and deletes its _ga cookies. In this mode the legal page's Cookie Policy shows a 'Change my cookie choice' button (data-dd-cookie-settings, re-opens the toast) so visitors can change their answer; add the same attribute to any other button that should do that.",
+		"For Norwegian/EU visitors, \"required\" is the safe choice: Norway's revised ekomloven (2025) is read as asking for GDPR-standard consent to analytics cookies — check Datatilsynet's current guidance."
+	],
+	"gaConsent": "implied",
 
-	"_comment_fonts": "Google Fonts URL. Leave empty string to use system fonts. Example: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'",
+	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit (all visitors). 'default' = plain Bootstrap. Theme names, CDN URLs and SRI hashes live in src/_data/cdn.js.",
+	"defaultBootswatchTheme": "default",
+
+	"_comment_flat": "flatToggle: the Flat mode button in the offcanvas menu (square corners, no shadows — flat.css) plus its JS in bundle.js. false = the button is gone AND a visitor's saved Flat choice is ignored, so nobody is stuck in flat mode with no way out. A site.json without the key counts as true.",
+	"flatToggle": true,
+
+	"_comment_devtools": [
+		"DEV/DEMO TOOLS — handy while building, rarely wanted on a finished site. The boilerplate shows them; on a derived site set BOTH to false before launch:",
+		"bootswatchSwitcher: the Bootswatch theme picker in the offcanvas menu (plus its JS in bundle.js).",
+		"demoPages: the demo pages (today /cheatsheet/, the Bootstrap component page) and their nav.js entries (`demo: true`). false = the pages aren't built at all. Either way they're noindex and never in sitemap.xml or llms.txt."
+	],
+	"bootswatchSwitcher": true,
+	"demoPages": true,
+
+	"_comment_fonts": "Google Fonts URL. Leave empty string to keep the theme's own fonts (system fonts for plain Bootstrap; most Bootswatch themes load Google Fonts themselves, see noGoogleFonts in src/_data/cdn.js). Example: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'",
 	"googleFontsUrl": "",
 
-	"_comment_webmanifest": "PWA web app manifest config — templated into site.webmanifest.njk. Keep in sync with themeColor in style.css.",
+	"_comment_fontOverride": "true = adds .dd-font-override to <html>, so the --bs-font-sans-serif stack in style.css §1.0 wins over Bootstrap's / the Bootswatch theme's own font. Set it together with googleFontsUrl, and put your font first in that stack. A site.json without the key counts as false.",
+	"fontOverride": false,
+
+	"_comment_navbar": [
+		"The navbar's background utility (bg) and its own data-bs-theme (theme) → navbar.njk. Default bg-primary + dark = white text on the primary colour.",
+		"With a light-primary Bootswatch theme (minty, brite) white text fails contrast: use { \"bg\": \"bg-body-tertiary\", \"theme\": \"light\" } or { \"bg\": \"bg-dark\", \"theme\": \"dark\" }. Change themeColor above to match. A site.json without the key gets the default."
+	],
+	"navbar": {
+		"bg": "bg-primary",
+		"theme": "dark"
+	},
+
+	"_comment_webmanifest": "PWA manifest → site.webmanifest.njk. name/shortName: \"\" = use site.name (shortName is the label under the home-screen icon, keep it ≤12 characters). theme_color comes from site.themeColor above (add webmanifest.themeColor only to override it). backgroundColor = splash-screen colour while an installed app starts.",
 	"webmanifest": {
-		"name": "My Site",
-		"shortName": "My Site",
-		"themeColor": "#212529",
+		"name": "",
+		"shortName": "",
 		"backgroundColor": "#000000"
 	},
 
 	"_comment_footer": [
 		"Footer configuration. 'links' renders as paired rows on mobile (centered bi-slash separator) and as one inline line on desktop.",
-		"Keep the count even (currently 4) so pairs render symmetrically — see footer.njk for the pair-row markup."
+		"Any number of links works: footer.njk pairs them with batch(2) and centres an odd last one on mobile. A link to this site's own domain (www. ignored) shows as plain text instead of linking to itself."
 	],
 	"footer": {
 		"copyrightName": "Your Name",

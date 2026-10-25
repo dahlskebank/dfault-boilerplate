@@ -1,27 +1,51 @@
 ---
 layout: base.njk
 title: Showcase
+description: "A sample Bootstrap 5 page: a hero section and a preview of the site's share image."
 mainClass: pb-5 mt-4
 ---
 
 {# Bootstrap 5.3 "Responsive left-aligned hero with image" example,
    adapted from https://getbootstrap.com/docs/5.3/examples/heroes/.
    Modified: kept the rounded-3 / border / shadow-lg from the previous
-   "Border hero" variant for visual continuity. `mx-0` on the row
-   cancels Bootstrap's negative gutter margins so the border sits
-   flush inside the container instead of bulging past it. #}
+   "Border hero" variant for visual continuity.
 
-<div class="container my-5">
-	<div class="row flex-lg-row-reverse align-items-center g-5 py-5 mx-0 rounded-3 border shadow-lg">
-		<div class="col-10 col-sm-8 col-lg-6 mt-0">
-			<img src="/assets/img/dfault-boilerplate-v1.jpg" class="d-block mx-lg-auto img-fluid rounded-3 shadow-lg" alt="dfault boilerplate v1 screenshot" width="700" height="500" loading="lazy">
+   LICENCE: the hero markup comes from Bootstrap's examples, which are
+   MIT-licensed — Copyright (c) 2011-present The Bootstrap Authors,
+   https://github.com/twbs/bootstrap/blob/main/LICENSE. The rest of the
+   boilerplate is WTFPL. Keep this credit while the hero is in use; a
+   derived site that replaces the hero with its own markup can drop it.
+
+   WHY THE BORDER SITS ON A WRAPPER, NOT ON THE .row:
+   A .row has negative margins (half the gutter) that its columns'
+   padding cancels out — the row is meant to sit inside something with
+   padding. The wrapper's p-4 (1.5rem) absorbs gx-5's -1.5rem side
+   margins and gy-4's -1.5rem top margin, so no mx-0 / mt-0 patches are
+   needed. No inner .container either: base.njk already wraps <main>
+   in one ("containers can be nested, but most layouts don't need it").
+
+   IMAGE: width/height are the file's real pixel size (850×720), so the
+   browser reserves the right aspect ratio before it loads (no layout
+   jump); img-fluid still scales it down. No loading="lazy" — this image
+   is above the fold (on mobile it comes first), and lazy-loading the
+   biggest visible image delays the page's main paint (LCP).
+   fetchpriority="high" asks the browser to fetch it early. #}
+
+<div class="my-5 p-4 p-lg-5 rounded-3 border shadow-lg">
+	<div class="row flex-lg-row-reverse align-items-center gx-5 gy-4">
+		<div class="col-10 col-sm-8 col-lg-6">
+			<img src="/assets/img/dfault-boilerplate-v1.jpg" class="d-block mx-lg-auto img-fluid rounded-3 shadow-lg" alt="Illustration of rolling dunes at dusk, traced with glowing blue lines" width="850" height="720" fetchpriority="high">
 		</div>
 		<div class="col-lg-6">
 			<h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">Bacon ipsum dolor amet short loin leberkas chuck</h1>
 			<p class="lead">Boudin chislic alcatra biltong. Kevin pork belly kielbasa rump polony jowl turducken. Alcatra tenderloin chuck picanha rump. Shank alcatra corned beef tail. Corned beef spare ribs tail prosciutto. Short loin rump frankfurter buffalo mortadella. Biltong shank filet mignon, chicken prosciutto chislic shoulder bacon rump ham hock short loin capicola pork belly porchetta.</p>
+			{# Links styled as buttons (they go somewhere). Use <button> only
+			   for actions that run JS on the same page. #}
 			<div class="d-grid gap-2 d-md-flex justify-content-md-start">
-				<button type="button" class="btn btn-primary btn-lg px-4 me-md-2">Bacon</button>
-				<button type="button" class="btn btn-outline-secondary btn-lg px-4">Ipsum</button>
+				<a href="/about/" class="btn btn-primary btn-lg px-4 me-md-2">Bacon</a>
+				{# .dd-btn-ghost (style.css §4.4), not btn-outline-secondary:
+				   #6c757d on the dark background is only 3.29:1. #}
+				<a href="/legal/" class="btn dd-btn-ghost btn-lg px-4">Ipsum</a>
 			</div>
 		</div>
 	</div>
@@ -29,16 +53,16 @@ mainClass: pb-5 mt-4
 
 {# OG image preview — figure + figcaption is the semantic pair for an
    image with a caption. Larger rounded-4 (vs hero's rounded-3) makes
-   the two sections feel related but not identical. #}
+   the two sections feel related but not identical. Below the fold, so
+   loading="lazy" is right here; width/height = the file's 1200×630. #}
 
-<div class="container my-5">
-	<figure class="figure d-block text-center">
-		<img src="/assets/img/og-image.jpg"
-			class="figure-img img-fluid rounded-4 shadow-lg mb-3"
-			alt="Open Graph share image preview">
-		<figcaption class="figure-caption">
-			<i class="bi bi-share me-1"></i>
-			Open Graph image — how this site previews when shared on social media.
-		</figcaption>
-	</figure>
-</div>
+<figure class="figure d-block text-center my-5">
+	<img src="/assets/img/og-image.jpg"
+		class="figure-img img-fluid rounded-4 shadow-lg mb-3"
+		alt="Open Graph share image preview"
+		width="1200" height="630" loading="lazy">
+	<figcaption class="figure-caption">
+		<i class="bi bi-share me-1" aria-hidden="true"></i>
+		Open Graph image — how this site previews when shared on social media.
+	</figcaption>
+</figure>

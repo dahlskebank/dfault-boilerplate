@@ -17,6 +17,17 @@
 
 	  2. `*` fallback for non-token CSS (Tailwind utilities,
 	     hardcoded radii, third-party widgets).
+
+	Two repairs on top (sections 2.0 and 3.0):
+
+	  - Bootstrap draws keyboard FOCUS with box-shadow (buttons,
+	    inputs, nav links, close buttons, checkboxes…), so the `*`
+	    box-shadow kill also removed every focus ring. Flat therefore
+	    brings its own outline-based focus indicator.
+
+	  - Some round shapes carry meaning (radio vs checkbox, round
+	    avatars, spinners). Those stay round — except in a
+	    high-contrast mode, which squares everything on purpose.
 */
 
 /*--------------------------------------------------------------
@@ -36,4 +47,50 @@
 	box-shadow: none !important;
 	text-shadow: none !important;
 	border-radius: 0 !important;
+}
+
+/*--------------------------------------------------------------
+2.0  Focus indicator
+
+A solid 2px outline replaces the box-shadow rings removed above.
+--bs-emphasis-color = black in light mode (21:1 on white), white in
+dark mode (15.43:1 on #212529) — and white inside the navbar too,
+because the navbar carries its own data-bs-theme="dark" (4.50:1 on
+bg-primary). :focus-visible = keyboard focus (and any focused text
+field), so mouse clicks on buttons don't draw it.
+
+.flat :focus-visible (0,2,0) ties with Bootstrap's own
+`.btn:focus-visible { outline: 0 }`-style rules and wins because
+flat.css loads after Bootstrap. High-contrast.css (loaded last, with
+!important) still wins over this, as it should.
+
+.btn-check: the real <input> is visually hidden, so its focus has to
+be drawn on the label button right after it.
+--------------------------------------------------------------*/
+
+.flat :focus-visible,
+.flat .btn-check:focus-visible + .btn {
+	outline: 2px solid var(--bs-emphasis-color);
+	outline-offset: 2px;
+}
+
+/*--------------------------------------------------------------
+3.0  Shapes that carry meaning stay round
+
+Radios would otherwise look exactly like checkboxes (single vs
+multiple choice), spinners turn into rotating squares, and
+.rounded-circle portraits become squares.
+The selector is (0,4,0): .flat (0,1,0) + :not(…) (0,1,0, the weight
+of its heaviest argument) + :is(…) with the [type] attribute
+(0,2,0). With !important it beats the `.flat *` radius kill above
+(0,1,0).
+
+:not(.high-contrast-*): HC mode is always square (high-contrast.css
+§3.0, `:is(.high-contrast-*) * { border-radius: 0 !important }`, only
+(0,1,0)). Without the :not, turning Flat on inside HC would make
+these shapes round again and change how HC looks.
+--------------------------------------------------------------*/
+
+.flat:not(.high-contrast-dark, .high-contrast-light, .high-contrast-custom) :is(.rounded-circle, .spinner-border, .spinner-grow, .form-check-input[type="radio"]) {
+	border-radius: 50% !important;
 }

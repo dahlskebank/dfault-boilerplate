@@ -1,11 +1,27 @@
----
-layout: base.njk
-title: Cheatsheet
-description: Every Bootstrap 5.3 component on one page — used for visual theme testing.
-mainClass: "px-0 w-100"
-bodyClass: "bd-cheatsheet-page"
-extraScripts:
-  - /assets/js/cheatsheet.js
+---js
+{
+	// JAVASCRIPT FRONT MATTER (note the "---js" fence): the same keys as
+	// YAML front matter, but a value can be a function. That's needed
+	// for the on/off switch below — YAML can only hold fixed values, and
+	// a permalink that renders to the TEXT "false" is treated as a URL.
+	layout: "base.njk",
+	title: "Cheatsheet",
+	description: "Every Bootstrap 5.3 component on one page — used for visual theme testing.",
+	mainClass: "px-0 w-100",
+	bodyClass: "bd-cheatsheet-page",
+	// Full-bleed page: the layout's own width switch (base.njk), so the
+	// TOC sidebar + content can use the whole window at xl+.
+	containerClass: "container-fluid",
+	extraScripts: ["/assets/js/cheatsheet.js"],
+
+	// --- Demo page: a dev reference, never site content ---
+	// noindex + left out of collections → not in search, sitemap.xml or llms.txt.
+	robots: "noindex, follow",
+	eleventyExcludeFromCollections: true,
+	// site.json → demoPages: false = don't build the page at all
+	// (its nav.js entry has `demo: true` and disappears too).
+	permalink: (data) => (data.site.demoPages ? "/cheatsheet/" : false),
+}
 ---
 {# ============================================================
     BOOTSTRAP 5.3 CHEATSHEET  —  src/cheatsheet.njk
@@ -17,6 +33,16 @@ extraScripts:
     Copyright (c) 2011-present The Bootstrap Authors.
     https://github.com/twbs/bootstrap/blob/main/LICENSE
 
+    LICENCE NOTICE IN THE OUTPUT: this whole block is a Nunjucks
+    comment (curly brace + hash), and Nunjucks strips it, so it
+    never reaches the built page. MIT asks for the copyright notice
+    in every copy of the code, and _site/cheatsheet/index.html IS a
+    copy of Bootstrap's markup. So the same notice is repeated below
+    as an HTML comment (<!-- … -->), which Eleventy passes through
+    untouched (scripts/minify.js only minifies CSS/JS, not HTML).
+    The rest of the boilerplate is WTFPL; this markup stays MIT —
+    keep both notices when you copy or edit the page.
+
     Used here as a single-page reference to visually test theme
     variants (light/dark/HC + Bootswatch swaps) against every
     Bootstrap component at once. Modify freely.
@@ -26,14 +52,24 @@ extraScripts:
         provides a single <main id="content"> wrapper).
       • aside + content wrapped in a Bootstrap d-flex container
         because the original page relied on body-level flex.
-      • toc collapse groups opened by default (more useful when
-        the whole page is the reference).
+      • TOC collapse groups start collapsed, as in the original;
+        cheatsheet.js expands the group holding the link that
+        ScrollSpy marks active while you scroll.
+      • A visually-hidden <h1> added above the markup: the original
+        page's only <h1>s are inside the (hidden) demo modals.
       • Astro scoped classes stripped, /docs/5.3/* links
         absolutized to https://getbootstrap.com/docs/5.3/*.
 
     Wrapped in {% raw %} so {{ }} or {% %} that may appear in
     inline code samples are not parsed by Nunjucks.
    ============================================================ #}
+
+<!-- Markup adapted from the Bootstrap 5.3 cheatsheet example
+     (https://getbootstrap.com/docs/5.3/examples/cheatsheet/).
+     Copyright (c) 2011-present The Bootstrap Authors.
+     MIT License: https://github.com/twbs/bootstrap/blob/main/LICENSE -->
+
+<h1 class="visually-hidden">{{ title }}</h1>
 
 {% raw %}
 <div class="bd-cheatsheet-wrap d-flex flex-column flex-xl-row-reverse gap-xl-4">

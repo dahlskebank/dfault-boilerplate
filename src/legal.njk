@@ -5,19 +5,54 @@
 #  Replace this content with your own legal text.
 #  The satirical tone below is intentional placeholder content.
 #  Consult a lawyer for real privacy policies.
+#
+#  What IS meant literally: the facts about what the boilerplate
+#  does with visitor data — no cookies of its own, preferences in
+#  localStorage, files from public CDNs (jsDelivr, cdnjs), Google
+#  Fonts (googleFontsUrl, or a Bootswatch theme that imports them)
+#  and Google Analytics (gaId, gaConsent). Those parts read
+#  site.json, so they stay true when you flip a switch.
+#  Keep them (and the cookie toast copy in base.njk) in sync if
+#  the site starts loading anything else from a third party.
+#
+#  PLACEHOLDER SWITCHES (both reversible):
+#    robots: "noindex, follow" — keeps the placeholder text out of
+#      search results (and out of the sitemap / llms.txt).
+#    legalPlaceholder: true — shows a reminder box while you run
+#      `eleventy --watch`; never in `npm run build` output.
+#  When you replace the text (or keep the satire on purpose),
+#  delete the robots line and set legalPlaceholder to false.
 # ============================================================
 layout: base.njk
 title: Legal Notice
+description: "Privacy, cookie and terms information for this site."
 mainClass: pb-5 mt-4
+robots: "noindex, follow"
+legalPlaceholder: true
 ---
 
 <div class="dd-embossed">
+	{# .dd-prose: same ~70-character reading column as the About page. #}
+	<div class="dd-prose mx-auto">
+	{# eleventy.env.runMode is "watch" under `eleventy --watch` and "build"
+	   for `npm run build` (what deploy uses), so this box never ships. #}
+	{% if legalPlaceholder and eleventy.env.runMode != "build" %}
+	<div class="alert alert-warning" role="note">
+		<strong>Placeholder text.</strong> Replace this page (or set
+		<code>legalPlaceholder: false</code> in legal.njk) before launch. Only
+		visible in watch mode.
+	</div>
+	{% endif %}
+
 	<h1 class="display-4 mb-4">Legal Notice</h1>
 
+	{# .dd-btn-ghost (style.css §4.4): body-colour text with a hairline
+	   border. btn-outline-primary was 3.73:1 on the dark card at 14px. #}
 	<nav class="d-flex flex-wrap gap-2 mb-5" aria-label="Legal sections">
-		<a href="#privacy-policy" class="btn btn-sm btn-outline-primary">Privacy Policy</a>
-		<a href="#cookie-policy" class="btn btn-sm btn-outline-primary">Cookie Policy</a>
-		<a href="#terms-of-service" class="btn btn-sm btn-outline-primary">Terms of Service</a>
+		<a href="#privacy-policy" class="btn btn-sm dd-btn-ghost">Privacy Policy</a>
+		<a href="#cookie-policy" class="btn btn-sm dd-btn-ghost">Cookie Policy</a>
+		<a href="#third-party-services" class="btn btn-sm dd-btn-ghost">Third-party services</a>
+		<a href="#terms-of-service" class="btn btn-sm dd-btn-ghost">Terms of Service</a>
 	</nav>
 
 	<hr class="mb-5" />
@@ -31,7 +66,7 @@ mainClass: pb-5 mt-4
 		</p>
 		<ol class="d-flex flex-column gap-3">
 			<li>
-				<strong>Data and information collected</strong>
+				<h3 class="h6 mb-0">Data and information collected</h3>
 				<p class="mb-2 mt-1">
 					To operate our web site it is essential to collect or process certain data, such as the following:
 				</p>
@@ -50,7 +85,7 @@ mainClass: pb-5 mt-4
 				</ul>
 			</li>
 			<li>
-				<strong>Information use</strong>
+				<h3 class="h6 mb-0">Information use</h3>
 				<p class="mb-2 mt-1">
 					Any information collected and stored regarding you is to enable us to offer better services to you. We will also
 					use the data collected for the following:
@@ -94,7 +129,7 @@ mainClass: pb-5 mt-4
 				</ul>
 			</li>
 			<li>
-				<strong>Personal data storage</strong>
+				<h3 class="h6 mb-0">Personal data storage</h3>
 				<ul class="list-unstyled d-flex flex-column gap-2 mb-0 mt-1">
 					<li>
 						<strong>3.1</strong> It is possible that we will collect transfer data from you regarding locations outside of the
@@ -118,7 +153,7 @@ mainClass: pb-5 mt-4
 				</ul>
 			</li>
 			<li>
-				<strong>Sharing your information</strong>
+				<h3 class="h6 mb-0">Sharing your information</h3>
 				<ul class="list-unstyled d-flex flex-column gap-2 mb-0 mt-1">
 					<li>
 						<strong>4.1</strong> If applicable, we will share your personal information to any group member. This will include
@@ -140,7 +175,15 @@ mainClass: pb-5 mt-4
 				</ul>
 			</li>
 			<li>
-				<strong>Third party links</strong>
+				<h3 class="h6 mb-0">Services we load from others</h3>
+				<p class="mb-0 mt-1">
+					This one is not a joke. The site loads some of its files from third parties, and your browser tells
+					them your IP address and browser type while fetching them. See
+					<a href="#third-party-services">Third-party services</a> for the list.
+				</p>
+			</li>
+			<li>
+				<h3 class="h6 mb-0">Third party links</h3>
 				<p class="mb-0 mt-1">
 					Third party links to web sites on our web site are not included in our privacy policy. You will need to check their
 					privacy policy regarding data. We do not accept liability or responsibility for third party links and their privacy
@@ -148,15 +191,16 @@ mainClass: pb-5 mt-4
 				</p>
 			</li>
 			<li>
-				<strong>Information access</strong>
+				<h3 class="h6 mb-0">Information access</h3>
 				<p class="mb-0 mt-1">
-					The Data Protection Act 1998 provides you with rights to access any information we may collect and store about you.
-					If you wish to have access to this information it will be subject to a payment fee, used to cover our costs
-					regarding the information you requested. If you wish to access this data please contact us.
+					Data protection law (the EU/EEA General Data Protection Regulation, which Norway applies through the Personal
+					Data Act) gives you the right to see any information we may collect and store about you. Asking is free of
+					charge, and the answer will be short: the site itself keeps nothing about you beyond the web host's server
+					logs. If you wish to access this data please contact us.
 				</p>
 			</li>
 			<li>
-				<strong>Contacting us</strong>
+				<h3 class="h6 mb-0">Contacting us</h3>
 				<p class="mb-0 mt-1">We welcome any queries, comments, or requests you may have regarding our privacy policy.</p>
 			</li>
 		</ol>
@@ -168,31 +212,122 @@ mainClass: pb-5 mt-4
 		<h2 class="mb-3">Cookie Policy</h2>
 		<p class="lead">
 			We are dedicated to protecting our privacy when you visit or communicate with our site or your personally delegated
-			accommodator. This Cookie Policy explains how and why we use cookies and similar bad faith technologies on this web
-			site. It should be read together with our Privacy Policy and Terms of Service.
+			accommodator. This Cookie Policy explains which cookies and similar bad faith technologies this web site uses.
+			Spoiler: fewer than you fear. It should be read together with our Privacy Policy and Terms of Service.
 		</p>
 
-		<strong>What are cookies?</strong>
+		<h3 class="h6 mb-1">What are cookies?</h3>
 		<p>
 			Cookies are small trojan text files that are downloaded to your computer, mobile device, or neural link when you
 			visit a web site. They are widely used to make web sites work more efficiently and to provide highly personal
-			tracking data and detailed behavioral profiles to the owners of the site (that’s us).
+			tracking data and detailed behavioral profiles to the owners of the site (that would be us, if we bothered).
 		</p>
 
-		<strong>How we use cookies</strong>
+		<h3 class="h6 mb-1">How we use cookies</h3>
+		{# Keep this list true. The keys behind it (for whoever maintains the
+		   site), all in localStorage and all written through window.ddStore
+		   (theme-init.njk):
+		     "theme"            — ddTheme.choose() in theme-init.njk (the
+		                          theme-toggle.js buttons)
+		     "flat"             — flat-toggle.js (unless flatToggle is false)
+		     "bootswatchTheme"  — bootswatch-switcher.js (bootswatchSwitcher)
+		     "cookieConsent"    — dfault.js, the toast was closed ("implied")
+		     "analyticsConsent" — dfault.js, Accept/Decline (gaConsent
+		                          "required" with a gaId only)
+		   `consentRequired` matches the toast in base.njk: in that mode GA
+		   only loads after Accept, and the [data-dd-cookie-settings] button
+		   below re-opens the toast (dfault.js), so the choice can be
+		   withdrawn as easily as it was given. #}
+		{% set consentRequired = site.gaId and site.gaConsent == "required" %}
+		{% if consentRequired %}
 		<p>
-			It is possible that we will gather information regarding your computer for our services. This collection of data is
-			used for statistical analysis about our web site for use by us or our benefactors. Any information shared will not
-			identify who you are, but is rather mathematical data about our visitors and their use on our site. The data does not
-			give out all personal details. Cookies will be used to gather this general internet data. When used, cookies are
-			downloaded to your computer without prompting. The cookie file is stored on your hard drive, where files are
-			transferred to. This information helps us improve our site and services to you.
+			We'd like to use Google Analytics to count visits and see which pages get read, but only if you say yes. Google
+			Analytics runs only after you click <em>Accept</em> in the cookie notice; until then, and if you click
+			<em>Decline</em>, nothing is sent to Google. Once accepted, it sets its own cookies (named <code>_ga</code> and
+			<code>_ga_…</code>) and sends your IP address and browsing data on this site to Google, for statistics about our
+			web site, not to identify you on purpose. You can change your mind at any time: declining switches it off again
+			and deletes those cookies.
 		</p>
 		<p>
-			All computers can block cookies by activating proper browser settings. There is a place to enable you to decline
-			cookies under the options menu. Please note if you decline cookies you will experience limited access to all areas of
-			our site.
+			<button type="button" class="btn btn-sm dd-btn-ghost" data-dd-cookie-settings>Change my cookie choice</button>
 		</p>
+		{% elif site.gaId %}
+		<p>
+			We use Google Analytics to count visits and see which pages get read. Google Analytics sets its own cookies
+			(named <code>_ga</code> and <code>_ga_…</code>) and sends your IP address and browsing data on this site to
+			Google. That data is used for statistics about our web site, not to identify you on purpose.
+		</p>
+		{% else %}
+		<p>
+			We don't. Out of the box this site sets no cookies at all, ours or anybody else's.
+		</p>
+		{% endif %}
+		<p>
+			What the site does use is your browser's <em>local storage</em>: a small notepad that lives on your device, is
+			never sent to us, and holds nothing but your display settings. It remembers your colour theme (light, dark or
+			high contrast){% if site.flatToggle !== false %}, whether Flat mode is on{% endif %}{% if site.bootswatchSwitcher %},
+			which Bootstrap theme you picked if you played with the theme switcher{% endif %}, and
+			{% if consentRequired %}your answer to the analytics question{% else %}that you closed the cookie notice so it stops
+			nagging you{% endif %}.
+		</p>
+		<p>
+			All browsers let you block or clear cookies and site data in their settings. If you do, the site still works
+			— it just forgets your theme and shows the notice again.
+		</p>
+	</section>
+
+	<hr class="mb-5" />
+
+	{# --- Third-party services ---
+	   Every line here is driven by site.json, so it stays accurate:
+	   jsDelivr is always used (Bootstrap, Bootstrap Icons; PhotoSwipe
+	   only on pages with an image gallery, see `loadPhotoswipe` in
+	   base.njk); cdnjs only for a Bootswatch theme or the theme switcher;
+	   Google Analytics only with gaId.
+	   Google Fonts: with googleFontsUrl, AND whenever a Bootswatch theme
+	   that @imports Google Fonts in its own CSS can load — the site's
+	   default theme, or any theme a visitor picks in the switcher. Most
+	   themes do; the few that don't are listed in src/_data/cdn.js
+	   (bootswatch.noGoogleFonts). The `in` operator tests a key of an
+	   object (cdn.bootswatch.themes) or an item of a list. #}
+	{% set bsTheme = site.defaultBootswatchTheme or "default" %}
+	{% set themeFonts = bsTheme != "default" and (bsTheme in cdn.bootswatch.themes) and not (bsTheme in cdn.bootswatch.noGoogleFonts) %}
+	<section id="third-party-services" class="mb-5">
+		<h2 class="mb-3">Third-party services</h2>
+		<p class="lead">
+			No satire in this section. To show you this page your browser also fetches files from the services below. Each one
+			receives your IP address, your browser's user agent and (usually) the name of this site, the same way any web
+			server does, and may keep them in its own logs.
+		</p>
+		<ul class="d-flex flex-column gap-2">
+			<li>
+				<strong>jsDelivr</strong> (<code>cdn.jsdelivr.net</code>) — a public CDN that serves Bootstrap and Bootstrap Icons
+				on every page, plus the PhotoSwipe image viewer on pages with an image gallery.
+			</li>
+			{% if site.defaultBootswatchTheme != "default" or site.bootswatchSwitcher %}
+			<li>
+				<strong>cdnjs</strong> (<code>cdnjs.cloudflare.com</code>, run by Cloudflare) — serves the Bootswatch theme
+				stylesheet{% if site.defaultBootswatchTheme == "default" %} when you pick one in the theme switcher{% endif %}.
+			</li>
+			{% endif %}
+			{% if site.googleFontsUrl or themeFonts or site.bootswatchSwitcher %}
+			<li>
+				<strong>Google Fonts</strong> (<code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code>) — serves the
+				web fonts{% if not site.googleFontsUrl %} that the Bootswatch theme stylesheet imports{% if not themeFonts %}
+				(only after you pick such a theme in the theme switcher){% endif %}{% endif %}.
+			</li>
+			{% endif %}
+			{% if site.gaId %}
+			<li>
+				<strong>Google Analytics</strong> (<code>www.googletagmanager.com</code>) — visit statistics, using the cookies
+				described in the <a href="#cookie-policy">Cookie Policy</a>.
+			</li>
+			{% endif %}
+			<li>
+				<strong>Our web host</strong> — like every web server, it logs each request (IP address, time, page, browser) to
+				keep the site running and secure.
+			</li>
+		</ul>
 	</section>
 
 	<hr class="mb-5" />
@@ -259,4 +394,5 @@ mainClass: pb-5 mt-4
 
 		<p>If you disagree with any part of these terms and conditions, please do not use our web site.</p>
 	</section>
+	</div>
 </div>

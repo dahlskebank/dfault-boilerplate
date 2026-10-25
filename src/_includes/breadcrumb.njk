@@ -20,18 +20,32 @@
 	   {% include "breadcrumb.njk" %}
 
 	 BEHAVIOUR:
-	   - Renders nothing for depth-1 pages (Home, About, Contact, etc.)
+	   - Renders nothing for depth-1 pages (Home, About, Showcase, etc.)
 	   - Label resolution priority: nav.js child > collection entry
 	     > page.title > title-cased URL slug
 	   - The actual lookup happens in the `breadcrumbs` filter in
 	     eleventy.config.js — see there for the exact rules.
+
+	 STRUCTURED DATA:
+	   The matching BreadcrumbList JSON-LD is NOT printed here: head-meta.njk
+	   adds it to the page's @graph in <head>, from the same `breadcrumbs`
+	   filter call, so the two always agree. It does that only when the
+	   page's rendered content contains this partial's `data-dd-breadcrumb`
+	   marker, so a page without a visible trail gets no BreadcrumbList
+	   (Google: don't mark up what visitors can't see). Keep the marker.
+	   `breadcrumbSchema: false` in front matter drops the JSON-LD and keeps
+	   the visible trail. The last item has no URL (Google then uses the
+	   page's own URL), so a `breadcrumbActiveHtml` override only changes
+	   the visible label.
+	   The first crumb links to /<first-folder>/ — make sure a page exists
+	   there (check:refs in `npm run build` fails on a broken link).
 	 ============================================================
 #}
 
 {% set crumbs = page.url | breadcrumbs(nav, title, collections) %}
 
 {% if crumbs %}
-	<nav aria-label="breadcrumb">
+	<nav aria-label="breadcrumb" data-dd-breadcrumb>
 		<ol class="breadcrumb mb-1">
 			{% for crumb in crumbs %}
 				<li class="breadcrumb-item{% if crumb.isActive %} active{% endif %}"{% if crumb.isActive %} aria-current="page"{% endif %}>

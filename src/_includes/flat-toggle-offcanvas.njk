@@ -9,24 +9,38 @@
 
 	 Wired up by flat-toggle.js, which:
 	   - listens on [data-flat-toggle]
-	   - flips aria-pressed
+	   - flips aria-pressed (+ .active)
 	   - swaps the icon (bi-square ⇄ bi-square-fill)
-	   - swaps the label inside .dd-flat-label
+
+	 The label stays "Flat mode" in both states. A toggle button
+	 says its state through aria-pressed ("Flat mode, toggle button,
+	 pressed"); the old label that changed to "Flat: On" / "Flat: Off"
+	 announced the state twice (WAI-ARIA APG button pattern).
+
+	 ON/OFF SWITCH: site.json → flatToggle: false hides this button,
+	 drops flat-toggle.js from the bundle and makes theme-init.njk
+	 stop applying a saved "flat", so nobody is stuck in flat mode.
+	 The check sits here (not around the include in
+	 offcanvas-menu.njk) so the partial switches itself off.
+	 `!== false` = on unless explicitly turned off, so a site.json
+	 without the key keeps the toggle.
 
 	 Included by offcanvas-menu.njk, between the theme toggle
 	 and the Bootswatch switcher.
 	 ============================================================
 #}
 
+{% if site.flatToggle !== false %}
 <div class="dd-offcanvas-divider"></div>
 <div class="dd-offcanvas-section">
-	<i class="bi bi-bounding-box me-1"></i> Flat Mode
+	<i class="bi bi-bounding-box me-1" aria-hidden="true"></i> Flat Mode
 </div>
 <div class="px-3 pb-3">
 	<button type="button"
-			class="btn btn-sm btn-outline-secondary w-100"
+			class="btn btn-sm dd-btn-ghost w-100"
 			data-flat-toggle
 			aria-pressed="false">
-		<i class="bi bi-square me-1"></i> <span class="dd-flat-label">Flat: Off</span>
+		<i class="bi bi-square me-1" aria-hidden="true"></i> Flat mode
 	</button>
 </div>
+{% endif %}

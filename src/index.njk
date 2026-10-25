@@ -15,17 +15,29 @@
 #    description →  Meta description for SEO
 #    bodyClass   →  CSS classes on <body>
 #    mainClass   →  CSS classes on <main>
+#    cover       →  true = vertically centred "cover page" layout
+#                   (see base.njk) — for splash pages like this one
+#                   or 404/403. Inner pages leave it out.
+#
+#  SEO / SHARING (all optional): robots, locale, ogImage (+ ogImageAlt
+#  and friends), ogType, schemaType, lastmod, jsonLd, breadcrumbSchema
+#  — the full list is at the top of src/_includes/head-meta.njk.
+#  `llms: false` leaves a page out of /llms.txt.
 #
 #  Everything below the second --- is the page content.
 #  It gets injected into {{ content | safe }} in base.njk.
 # ============================================================
 layout: base.njk
+cover: true
 mainClass: px-3 text-center
 ---
 
 <h1 class="display-1">{{ site.name }}</h1>
 <p class="lead mb-4">{{ site.description }}</p>
+{# CTAs use btn-primary, Bootstrap's brand/main-action colour, so they follow
+   whatever primary a Bootswatch theme defines. btn-success is a STATUS colour
+   ("it worked") — keep it for confirmations. #}
 <p class="lead d-flex justify-content-center flex-wrap gap-2">
-	<a href="/about/" class="btn btn-lg btn-success fw-bold">Learn More</a>
-	<a href="/showcase/" class="btn btn-lg btn-outline-success fw-bold">View Showcase</a>
+	<a href="/about/" class="btn btn-lg btn-primary fw-bold">Learn More</a>
+	<a href="/showcase/" class="btn btn-lg btn-outline-primary fw-bold">View Showcase</a>
 </p>

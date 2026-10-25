@@ -17,79 +17,308 @@
 
 	 We use Nunjucks "default" filter:  {{ title | default(site.name) }}
 	 This means: "use `title` if the page defined it, otherwise fall back
-	 to `site.name` from site.json."
+	 to `site.name` from site.json."  `or` does the same job and also
+	 skips empty strings:  {{ locale or site.locale }}
+
+	 FRONT-MATTER KNOBS THIS PARTIAL READS (all optional):
+	 -----------------------------------------------------
+		 title, description → <title>, meta description, og:/twitter:, JSON-LD
+		 robots         → e.g. "noindex, follow". Replaces site.robots. Any
+		                  value containing "noindex" also keeps the page out
+		                  of sitemap.xml and llms.txt.
+		 locale         → og:locale for this page (en_US, nb_NO)
+		 ogImage        → this page's share image (root-relative or https://)
+		 ogImageAlt, ogImageWidth, ogImageHeight, ogImageType
+		                → describe THAT image. Leave the size out if unsure:
+		                  a missing tag is fine, a wrong one isn't. Same
+		                  for the alt: without ogImageAlt no alt is
+		                  printed, rather than a guessed one (the title).
+		 ogType         → "article" = blog post: article:* tags + a
+		                  BlogPosting node. Also set `date:` (published).
+		 schemaType     → JSON-LD type of the page node: "ProfilePage"
+		                  (CV / about-me), "AboutPage", "ContactPage", …
+		                  Default "WebPage".
+		 lastmod        → QUOTED date, lastmod: "2026-10-24". Overrides the
+		                  git/file date in JSON-LD and sitemap.xml.
+		 jsonLd         → one extra schema.org node (an object) or several
+		                  (a list), added to this page's @graph — e.g. a
+		                  Movie or Event. Leave "@context" out of it.
+		 breadcrumbSchema → false = no BreadcrumbList node on this page.
+		                  (The node only appears at all on a page that
+		                  shows the trail: one that includes
+		                  breadcrumb.njk — see the JSON-LD notes below.)
 
 	 BOILERPLATE NOTE:
 	 -----------------
 	 When starting a new project, update src/_data/site.json with your
-	 site's name, URL, description, and OG image.  These meta tags will
-	 automatically use those values as defaults for every page.
+	 site's name, URL, description, locale and OG image.  These meta tags
+	 will automatically use those values as defaults for every page.
 	 ============================================================ #}
 
 {# --- Basic charset & viewport (required for responsive design) --- #}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+{# --- Shared values, worked out ONCE so every tag below agrees ---
+		 `~` joins strings in Nunjucks (like `.` in PHP).
+		 site.url has no trailing slash, so:
+			 homeUrl = "https://example.com/"
+			 pageUrl = "https://example.com/about/"   (page.url starts with /) #}
+{%- set homeUrl = site.url ~ "/" -%}
+{%- set pageUrl = site.url ~ page.url -%}
+
+{#- Robots: a staging/private site (site.noindexSite) wins; then the page's
+		own `robots:`; then the site-wide default from site.json. The
+		matching X-Robots-Tag header comes from .htaccess. -#}
+{%- set robotsValue = "noindex, nofollow" if site.noindexSite else (robots or site.robots or "index, follow, max-image-preview:large") -%}
+
+{#- Share image: a full https:// URL is used as-is, a root-relative path
+		gets site.url in front, plus `| v` (eleventy.config.js): ?v= and a
+		hash of the file's CONTENT. Facebook, Telegram & co. cache share
+		images by URL, so a new picture under the same file name now gets
+		a new URL by itself.
+		Width/height/type/alt come from the SAME source as the image: the
+		page's own values when the page set its own ogImage, otherwise the
+		site.json defaults. No alt is better than a wrong one, so there's
+		no fallback to the page title: without ogImageAlt the og:image:alt
+		and twitter:image:alt tags are left out. -#}
+{%- set shareImg = ogImage or site.ogImage -%}
+{%- if shareImg and shareImg.indexOf("http") != 0 %}{% set shareImg = site.url ~ (shareImg | v) %}{% endif -%}
+{%- if ogImage -%}
+	{%- set shareAlt = ogImageAlt -%}
+	{%- set shareW = ogImageWidth -%}
+	{%- set shareH = ogImageHeight -%}
+	{%- set shareType = ogImageType -%}
+{%- else -%}
+	{%- set shareAlt = site.ogImageAlt -%}
+	{%- set shareW = site.ogImageWidth -%}
+	{%- set shareH = site.ogImageHeight -%}
+	{%- set shareType = site.ogImageType -%}
+{%- endif -%}
+
+{#- Dates as full ISO 8601 timestamps (with time + offset).
+		published = page.date: the front-matter `date:` if set, otherwise
+		Eleventy's default (the file's CREATION date — set `date:` on posts).
+		modified  = `lastmod:` front matter, otherwise the `lastModified`
+		filter (eleventy.config.js: last git commit of the file, or its
+		modified time if uncommitted). An unquoted YAML date arrives as a
+		Date object, so it's converted with .toISOString(). -#}
+{%- set published = page.date.toISOString() if page.date.toISOString else page.date -%}
+{%- set modified = lastmod or (page.inputPath | lastModified) -%}
+{%- if modified.toISOString %}{% set modified = modified.toISOString() %}{% endif -%}
+
 {# --- Page title — shown in browser tab and search results ---
 		 Inner pages: "Page Title | Site Name"
-		 Homepage (no title set): "Site Name | Site Description" #}
-<title>{% if title %}{{ title }}  |  {{ site.name }}{% else %}{{ site.name }}  –  {{ site.description }}{% endif %}</title>
+		 Homepage (no title set): "Site Name – Site Description" (en dash) #}
+<title>{% if title %}{{ title }} | {{ site.name }}{% else %}{{ site.name }} – {{ site.description }}{% endif %}</title>
 
-{# --- SEO meta tags --- #}
+{# --- SEO meta tags ---
+		 "index, follow" on its own is Google's default and changes nothing;
+		 max-image-preview:large (site.robots) allows big image previews. #}
 <meta name="description" content="{{ description | default(site.description) }}">
 <meta name="author" content="{{ site.author.name }}">
-<meta name="robots" content="{{ robots | default('index, follow') }}">
+<meta name="robots" content="{{ robotsValue }}">
 
-{# --- Open Graph (Facebook, LinkedIn, Discord, etc.) ---
+{# --- Open Graph (Facebook, LinkedIn, WhatsApp, Telegram, Discord, Slack, etc.) ---
 		 These control how your page looks when shared on social media.
-		 The og:image should be 1200x630px for best results. #}
+		 og:locale is language_TERRITORY with an underscore (en_US, nb_NO),
+		 unlike <html lang> — both are set in site.json.
+		 og:image:type is only printed for the formats Facebook documents
+		 (JPEG, PNG, GIF), and width/height only when both are known. #}
 <meta property="og:type" content="{{ ogType | default('website') }}">
 <meta property="og:site_name" content="{{ site.name }}">
-<meta property="og:locale" content="en_US">
-<meta property="og:url" content="{{ site.url }}{{ page.url }}">
+<meta property="og:locale" content="{{ locale or site.locale or 'en_US' }}">
+<meta property="og:url" content="{{ pageUrl }}">
 <meta property="og:title" content="{{ title | default(site.name) }}">
 <meta property="og:description" content="{{ description | default(site.description) }}">
-<meta property="og:image" content="{{ site.url }}{{ ogImage | default(site.ogImage) }}">
-<meta property="og:image:type" content="image/jpeg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="{{ title | default(site.name) }}">
+<meta property="og:image" content="{{ shareImg }}">
+{% if shareType in ["image/jpeg", "image/png", "image/gif"] %}<meta property="og:image:type" content="{{ shareType }}">
+{% endif %}{% if shareW and shareH %}<meta property="og:image:width" content="{{ shareW }}">
+<meta property="og:image:height" content="{{ shareH }}">
+{% endif %}{% if shareAlt %}<meta property="og:image:alt" content="{{ shareAlt }}">
+{% endif %}{% if ogType == "article" %}
+{# --- Blog post extras (front matter: ogType: article + date:) ---
+		 article:author must be a profile URL, not a name. #}
+<meta property="article:published_time" content="{{ published }}">
+<meta property="article:modified_time" content="{{ modified }}">
+<meta property="article:author" content="{{ site.author.url }}">
+{% endif %}
 
-{# --- Twitter / X Card --- #}
+{# --- Twitter / X Card ---
+		 X falls back to the og: tags, but some apps read these first.
+		 twitter:site / fediverse:creator only appear when site.json →
+		 social.x / social.fediverse are filled in. #}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ title | default(site.name) }}">
 <meta name="twitter:description" content="{{ description | default(site.description) }}">
-<meta name="twitter:image" content="{{ site.url }}{{ ogImage | default(site.ogImage) }}">
+<meta name="twitter:image" content="{{ shareImg }}">
+{% if shareAlt %}<meta name="twitter:image:alt" content="{{ shareAlt }}">
+{% endif %}{% if site.social.x %}<meta name="twitter:site" content="@{{ site.social.x | replace('@', '') }}">
+{% endif %}{% if site.social.fediverse %}<meta name="fediverse:creator" content="{{ site.social.fediverse }}">
+{% endif %}
 
-{# --- Browser theme color (affects mobile browser chrome) --- #}
+{# --- Browser theme color (tints Chrome's address bar on Android) --- #}
 <meta name="theme-color" content="{{ site.themeColor }}">
 
-{# --- JSON-LD structured data ---
-		 Provides machine-readable site info to search engines.
-		 Default: WebSite schema. Pages can override by setting jsonLd
-		 in front matter or by extending the {% block jsonld %} block. #}
-{# --- Why the "| dump | safe" pipeline here ---
-	 Nunjucks auto-escapes "'", "&", and """ into HTML entities
-	 (&#39;, &amp;, &quot;). That's correct inside HTML attributes
-	 like content="..." because the browser decodes entities there.
-	 But inside a <script type="application/ld+json"> block the
-	 contents are raw text — entities are NOT decoded. A site name
-	 like "People's Bureau" would emit the literal "People&#39;s"
-	 and search engines would read the &#39; as part of the name.
-	 "| dump" outputs proper JSON-encoded strings INCLUDING their
-	 surrounding quotes, and "| safe" stops Nunjucks from then
-	 re-escaping the output. #}
-<script type="application/ld+json">
+{# --- JSON-LD structured data (one @graph per page) ---
+		 Machine-readable facts for search engines and AI tools. A "graph"
+		 is a list of small nodes that point at each other by "@id" (a URL
+		 used as a name). Using the SAME @id on every site — site.json →
+		 author.id = https://danieldahl.com/#person — says "this is the
+		 same person" across the whole network.
+
+		 Nodes:
+		 - Person (the author)  every page
+		 - WebSite              HOME PAGE ONLY (that's where Google reads
+		                        the site name + alternateName)
+		 - Publisher            only when site.json → publisher.id is set
+		                        (a client's Organization); otherwise the
+		                        author is the publisher
+		 - the page itself      every page: WebPage, or `schemaType:`
+		 - BlogPosting          when `ogType: article`
+		 - BreadcrumbList       only pages that SHOW a trail (see below)
+		 - your own nodes       `jsonLd:` front matter
+
+		 Why the "| dump | safe" pipeline here:
+		 Nunjucks auto-escapes "'", "&", and """ into HTML entities
+		 (&#39;, &amp;, &quot;). That's correct inside HTML attributes
+		 like content="..." because the browser decodes entities there.
+		 But inside a <script type="application/ld+json"> block the
+		 contents are raw text — entities are NOT decoded. A site name
+		 like "People's Bureau" would emit the literal "People&#39;s"
+		 and search engines would read the &#39; as part of the name.
+		 "| dump" outputs proper JSON-encoded strings INCLUDING their
+		 surrounding quotes, and "| safe" stops Nunjucks from then
+		 re-escaping the output.
+
+		 Why the graph is captured with {% set ld %}…{% endset %} first:
+		 so ONE replace can turn every "<" into the JSON escape <
+		 before printing. JSON.stringify leaves "<" alone, so a value
+		 containing "</script>" would otherwise end the script block
+		 early. ("\\u003c" in the template = backslash + u003c.)
+
+		 Why the BreadcrumbList depends on `content`:
+		 Google's rule for structured data is "don't mark up content that
+		 isn't visible on the page". So the node is only added when the
+		 page really shows the trail: breadcrumb.njk marks its <nav> with
+		 data-dd-breadcrumb, and `content` (the page's already-rendered
+		 HTML, the same trick base.njk uses for `loadPhotoswipe`) is
+		 searched for that marker. Both use the same `breadcrumbs` filter
+		 call, so the visible trail and the JSON-LD always agree.
+		 `content and …` guards a template that includes this partial
+		 without a page body. #}
+{%- set authorId = site.author.id or (homeUrl ~ "#author") -%}
+{%- set pub = site.publisher or {} -%}
+{%- set pubId = pub.id or authorId -%}
+{%- set pubType = pub.type or "Organization" -%}
+{%- set pubLogo = "" -%}
+{%- if pub.logo %}{% set pubLogo = pub.logo if pub.logo.indexOf("http") == 0 else site.url ~ pub.logo %}{% endif -%}
+{%- set pubImage = "" -%}
+{%- if pub.image %}{% set pubImage = pub.image if pub.image.indexOf("http") == 0 else site.url ~ pub.image %}{% endif -%}
+{%- set crumbs = null -%}
+{%- if breadcrumbSchema !== false and content and ("data-dd-breadcrumb" in content) %}{% set crumbs = page.url | breadcrumbs(nav, title, collections) %}{% endif -%}
+{%- set extraNodes = [] -%}
+{%- if jsonLd is mapping %}{% set extraNodes = [jsonLd] %}{% elif jsonLd %}{% set extraNodes = jsonLd %}{% endif -%}
+{%- set ld -%}
 {
 	"@context": "https://schema.org",
-	"@type": "WebSite",
-	"name": {{ site.name | dump | safe }},
-	"url": {{ site.url | dump | safe }},
-	"description": {{ (description or site.description) | dump | safe }},
-	"author": {
-		"@type": "Person",
-		"name": {{ site.author.name | dump | safe }},
-		"url": {{ site.author.url | dump | safe }}
-	}
+	"@graph": [
+		{
+			"@type": "Person",
+			"@id": {{ authorId | dump | safe }},
+			"name": {{ site.author.name | dump | safe }},
+			"url": {{ site.author.url | dump | safe }}
+			{%- if site.author.sameAs and site.author.sameAs.length %},
+			"sameAs": {{ site.author.sameAs | dump | safe }}
+			{%- endif %}
+		}
+		{%- if page.url == "/" %},
+		{
+			"@type": "WebSite",
+			"@id": {{ (homeUrl ~ "#website") | dump | safe }},
+			"url": {{ homeUrl | dump | safe }},
+			"name": {{ site.name | dump | safe }},
+			{%- if site.alternateName and site.alternateName.length %}
+			"alternateName": {{ site.alternateName | dump | safe }},
+			{%- endif %}
+			"description": {{ site.description | dump | safe }},
+			"inLanguage": {{ site.lang | dump | safe }},
+			"publisher": { "@id": {{ pubId | dump | safe }} }
+		}
+		{%- endif %}
+		{%- if pubId != authorId %},
+		{
+			"@type": {{ pubType | dump | safe }},
+			"@id": {{ pubId | dump | safe }},
+			"name": {{ (pub.name or site.name) | dump | safe }},
+			"url": {{ (pub.url or homeUrl) | dump | safe }}
+			{%- if pubLogo and pubType == "Organization" %},
+			"logo": {{ pubLogo | dump | safe }}
+			{%- endif %}
+			{%- if pubImage %},
+			"image": {{ pubImage | dump | safe }}
+			{%- endif %}
+			{%- if pub.sameAs and pub.sameAs.length %},
+			"sameAs": {{ pub.sameAs | dump | safe }}
+			{%- endif %}
+		}
+		{%- endif %},
+		{
+			"@type": {{ (schemaType or "WebPage") | dump | safe }},
+			"@id": {{ (pageUrl ~ "#webpage") | dump | safe }},
+			"url": {{ pageUrl | dump | safe }},
+			"name": {{ (title or site.name) | dump | safe }},
+			"description": {{ (description or site.description) | dump | safe }},
+			"inLanguage": {{ site.lang | dump | safe }},
+			"isPartOf": { "@id": {{ (homeUrl ~ "#website") | dump | safe }} },
+			"author": { "@id": {{ authorId | dump | safe }} },
+			{%- if schemaType == "ProfilePage" %}
+			"mainEntity": { "@id": {{ pubId | dump | safe }} },
+			{%- endif %}
+			{%- if crumbs %}
+			"breadcrumb": { "@id": {{ (pageUrl ~ "#breadcrumb") | dump | safe }} },
+			{%- endif %}
+			"dateModified": {{ modified | dump | safe }}
+		}
+		{%- if ogType == "article" %},
+		{
+			"@type": "BlogPosting",
+			"@id": {{ (pageUrl ~ "#article") | dump | safe }},
+			"mainEntityOfPage": { "@id": {{ (pageUrl ~ "#webpage") | dump | safe }} },
+			"headline": {{ (title or site.name) | dump | safe }},
+			"description": {{ (description or site.description) | dump | safe }},
+			"image": {{ shareImg | dump | safe }},
+			"datePublished": {{ published | dump | safe }},
+			"dateModified": {{ modified | dump | safe }},
+			"inLanguage": {{ site.lang | dump | safe }},
+			"author": { "@id": {{ authorId | dump | safe }} },
+			"publisher": { "@id": {{ pubId | dump | safe }} }
+		}
+		{%- endif %}
+		{%- if crumbs %},
+		{
+			"@type": "BreadcrumbList",
+			"@id": {{ (pageUrl ~ "#breadcrumb") | dump | safe }},
+			"itemListElement": [
+				{%- for crumb in crumbs %}
+				{
+					"@type": "ListItem",
+					"position": {{ loop.index }},
+					"name": {{ crumb.label | dump | safe }}
+					{%- if not crumb.isActive %},
+					"item": {{ (site.url ~ crumb.url) | dump | safe }}
+					{%- endif %}
+				}{% if not loop.last %},{% endif %}
+				{%- endfor %}
+			]
+		}
+		{%- endif %}
+		{%- for node in extraNodes %},
+		{{ node | dump | safe }}
+		{%- endfor %}
+	]
 }
+{%- endset %}
+<script type="application/ld+json">
+{{ ld | replace("<", "\\u003c") | safe }}
 </script>

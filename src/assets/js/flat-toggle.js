@@ -8,7 +8,10 @@
  *
  *  STATE
  *    - Class "flat" on <html> when on, absent when off.
- *    - Persisted in localStorage under key "flat" with value "on".
+ *    - Persisted in localStorage under key "flat" with value "on"
+ *      (through window.ddStore from theme-init.njk, which never
+ *      throws — with site data blocked the toggle still works
+ *      for the current page, it just isn't remembered).
  *    - Absence of the key means off (default).
  *
  *  FOUC PREVENTION
@@ -18,15 +21,22 @@
  *
  *  USAGE
  *    Any element with [data-flat-toggle] becomes a toggle
- *    button. The script updates aria-pressed, swaps the
- *    icon (bi-square ⇄ bi-square-fill) inside the button,
- *    and updates any .dd-flat-label text.
+ *    button. The script updates aria-pressed (+ .active) and
+ *    swaps the icon (bi-square ⇄ bi-square-fill) inside the
+ *    button. The label text is left alone on purpose: the state
+ *    is in aria-pressed, so the name stays the same
+ *    ("Flat mode") in both states.
+ *
+ *    Bundled only while site.flatToggle isn't false (the `when`
+ *    in SITE_WIDE_JS, eleventy.config.js).
  *
  * ============================================================
  */
 
 document.addEventListener("DOMContentLoaded", () => {
 	const html = document.documentElement;
+	// Fallback for a page without theme-init.njk: plain, unremembered toggling.
+	const store = window.ddStore || { get: () => null, set: () => {} };
 
 	function syncUI(isOn) {
 		document.querySelectorAll("[data-flat-toggle]").forEach((btn) => {
@@ -39,23 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
 				icon.classList.toggle("bi-square", !isOn);
 				icon.classList.toggle("bi-square-fill", isOn);
 			}
-
-			// Update the label text if the button uses one
-			const label = btn.querySelector(".dd-flat-label");
-			if (label) {
-				label.textContent = isOn ? "Flat: On" : "Flat: Off";
-			}
 		});
 	}
 
 	function setFlat(isOn) {
-		if (isOn) {
-			html.classList.add("flat");
-			localStorage.setItem("flat", "on");
-		} else {
-			html.classList.remove("flat");
-			localStorage.removeItem("flat");
-		}
+		html.classList.toggle("flat", isOn);
+		// null removes the key: absent = off.
+		store.set("flat", isOn ? "on" : null);
 		syncUI(isOn);
 	}
 

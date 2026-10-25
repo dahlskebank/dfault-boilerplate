@@ -1,0 +1,57 @@
+---js
+{
+	// ============================================================
+	//  LLMS.TXT  —  src/llms.njk   →   /llms.txt
+	// ============================================================
+	//  A curated Markdown map of the site for AI tools and coding
+	//  agents (format: https://llmstxt.org — H1 name, "> " summary,
+	//  "## " sections of links). No big AI provider officially reads
+	//  it and Google Search ignores it; it's generated, so it costs
+	//  nothing to keep in sync.
+	//
+	//  JavaScript front matter (the "---js" fence) so the permalink can
+	//  be a function: site.json → llmsTxt: false (or noindexSite: true)
+	//  means the file isn't built at all.
+	// ============================================================
+	permalink: (data) => (data.site.llmsTxt !== false && !data.site.noindexSite ? "/llms.txt" : false),
+	eleventyExcludeFromCollections: true,
+	layout: false,
+}
+---
+{#- ------------------------------------------------------------
+	WHICH PAGES ARE LISTED: everything in collections.all (so not the
+	404/403 pages, robots.txt, the sitemap, the cheatsheet — they set
+	eleventyExcludeFromCollections), minus pages whose robots value
+	contains "noindex" and pages with `llms: false` in front matter.
+	Sorted by URL, so the home page "/" comes first.
+	A page's own `description:` becomes the note after its link.
+
+	PLAIN TEXT, NOT HTML: `| safe` stops Nunjucks' HTML auto-escaping
+	(otherwise "Dahl's" would print as "Dahl&#39;s").
+------------------------------------------------------------ -#}
+# {{ site.name | safe }}
+
+> {{ site.description | safe }}
+
+## Pages
+{% for entry in collections.all | sort(false, true, "url") %}
+{%- set entryRobots = entry.data.robots or site.robots or "" %}
+{%- if entry.url and not ("noindex" in entryRobots) and entry.data.llms !== false %}
+{%- set label = "Home" if entry.url == "/" else (entry.data.title or entry.url) %}
+{%- set note = entry.data.description or (site.description if entry.url == "/" else "") %}
+- [{{ label | safe }}]({{ site.url | safe }}{{ entry.url | safe }}){% if note %}: {{ note | safe }}{% endif %}
+{%- endif %}
+{%- endfor %}
+
+## Author
+
+- [{{ site.author.name | safe }}]({{ site.author.url | safe }}): Built and maintains this website.
+{%- for url in site.author.sameAs or [] %}
+{%- if url != site.author.url %}
+- [{{ url | hostname | safe }}]({{ url | safe }})
+{%- endif %}
+{%- endfor %}
+
+## Optional
+
+- [Sitemap]({{ site.url | safe }}/sitemap.xml): Every indexable URL with its last-modified date.

@@ -3,24 +3,62 @@ permalink: /site.webmanifest
 eleventyExcludeFromCollections: true
 layout: false
 ---
+{#- ============================================================
+	WEB APP MANIFEST  —  src/site.webmanifest.njk
+	============================================================
+	Tells Chrome (Android/desktop) how to install the site as an app:
+	name, icons, colours, and which URL to open.
+
+	Why every value is `{{ x | dump | safe }}` with NO quotes around it:
+	this file is JSON, not HTML. Nunjucks auto-escapes for HTML, so
+	"Dahl's" would come out as "Dahl&#39;s" and show up like that under
+	the home-screen icon. `dump` writes a proper JSON string (quotes and
+	escaping included) and `safe` stops Nunjucks escaping it again —
+	the same trick head-meta.njk uses for JSON-LD.
+
+	Values fall back to the main site.json keys, so a new site only
+	has to change site.name / site.themeColor once.
+
+	id / start_url / scope "/": the installed app is the whole site and
+	always opens on the home page (without start_url it opens on
+	whatever page you installed it from).
+
+	ICONS: "any" = shown as-is; "maskable" = an opaque, full-bleed
+	square whose important part sits inside the centre circle (80% of
+	the width), because Android crops it to a circle/squircle. It's a
+	separate file: cropping the plain icon would cut its corners off.
+	The boilerplate ships the dfault placeholder set — replace all three
+	(test the maskable one at https://maskable.app).
+	============================================================ -#}
 {
-	"name": "{{ site.webmanifest.name }}",
-	"short_name": "{{ site.webmanifest.shortName }}",
+	"id": "/",
+	"name": {{ (site.webmanifest.name or site.name) | dump | safe }},
+	"short_name": {{ (site.webmanifest.shortName or site.name) | dump | safe }},
+	"description": {{ site.description | dump | safe }},
+	"lang": {{ (site.lang or "en") | dump | safe }},
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"theme_color": {{ (site.webmanifest.themeColor or site.themeColor) | dump | safe }},
+	"background_color": {{ (site.webmanifest.backgroundColor or "#ffffff") | dump | safe }},
 	"icons": [
 		{
 			"src": "/assets/img/web-app-manifest-192x192.png",
 			"sizes": "192x192",
 			"type": "image/png",
-			"purpose": "maskable"
+			"purpose": "any"
 		},
 		{
 			"src": "/assets/img/web-app-manifest-512x512.png",
 			"sizes": "512x512",
 			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/assets/img/web-app-manifest-512x512-maskable.png",
+			"sizes": "512x512",
+			"type": "image/png",
 			"purpose": "maskable"
 		}
-	],
-	"theme_color": "{{ site.webmanifest.themeColor }}",
-	"background_color": "{{ site.webmanifest.backgroundColor }}",
-	"display": "standalone"
+	]
 }

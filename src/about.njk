@@ -1,18 +1,28 @@
 ---
 layout: base.njk
 title: About
+description: "Who builds and maintains this site, and how it is put together."
 mainClass: pb-5 mt-4
 ---
 
+{# .dd-prose (style.css §5.1) caps the text column at ~70 characters per
+   line — at full container width the paragraphs ran ~120 characters,
+   which is hard to track back to the next line. mx-auto centres the
+   column inside the card.
+   Only the first paragraph is .lead (the intro); the rest is body text,
+   so the page keeps a visual hierarchy. display-4 matches the legal page;
+   display-1 is kept for the home page hero. #}
 <div class="dd-embossed">
-	<h1 class="display-1 pt-4">About {{ site.name }}</h1>
-	<p class="lead">
-		Bacon ipsum dolor amet short loin leberkas chuck, boudin chislic alcatra biltong. Kevin pork belly kielbasa rump polony jowl turducken. Alcatra tenderloin chuck picanha rump. Shank alcatra corned beef tail. Corned beef spare ribs tail prosciutto. Short loin rump frankfurter buffalo mortadella. Biltong shank filet mignon, chicken prosciutto chislic shoulder bacon rump ham hock short loin capicola pork belly porchetta.
-	</p>
+	<div class="dd-prose mx-auto">
+		<h1 class="display-4 pt-4">About {{ site.name }}</h1>
+		<p class="lead">
+			Bacon ipsum dolor amet short loin leberkas chuck, boudin chislic alcatra biltong. Kevin pork belly kielbasa rump polony jowl turducken. Alcatra tenderloin chuck picanha rump. Shank alcatra corned beef tail. Corned beef spare ribs tail prosciutto. Short loin rump frankfurter buffalo mortadella. Biltong shank filet mignon, chicken prosciutto chislic shoulder bacon rump ham hock short loin capicola pork belly porchetta.
+		</p>
 
-	<p class="lead">
-		Tri-tip filet mignon pig shank, alcatra beef hamburger ham boudin mortadella. Strip steak venison drumstick mortadella, polony bresaola buffalo short ribs pork loin ground round. Cow turducken doner bacon alcatra. Frankfurter pork chop kielbasa prosciutto pancetta cow leberkas. Rump mortadella shankle kevin. Capicola chicken turkey frankfurter. Alcatra capicola buffalo, doner short loin drumstick tenderloin shankle ribeye jerky ham hock burgdoggen bacon rump short ribs.
-	</p>
+		<p>
+			Tri-tip filet mignon pig shank, alcatra beef hamburger ham boudin mortadella. Strip steak venison drumstick mortadella, polony bresaola buffalo short ribs pork loin ground round. Cow turducken doner bacon alcatra. Frankfurter pork chop kielbasa prosciutto pancetta cow leberkas. Rump mortadella shankle kevin. Capicola chicken turkey frankfurter. Alcatra capicola buffalo, doner short loin drumstick tenderloin shankle ribeye jerky ham hock burgdoggen bacon rump short ribs.
+		</p>
 
-	<p class="lead">Make it yours!</p>
+		<p>Make it yours!</p>
+	</div>
 </div>

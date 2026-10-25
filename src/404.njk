@@ -10,20 +10,40 @@
 #  static hosts like Netlify/Vercel) expect to find it.
 #
 #  The .htaccess file has: ErrorDocument 404 /404.html
+#
+#  ROBOTS:
+#  Apache sends this page with status 404, but /404.html itself
+#  answers 200 when requested directly — noindex keeps that copy
+#  out of search results.
+#
+#  COVER:
+#  `cover: true` centres the message between the navbar and the
+#  footer, like the home page (base.njk). Without it, the content
+#  sits at the top, right under the navbar.
 # ============================================================
 layout: base.njk
 title: 404 Not Found
 mainClass: px-3 text-center
+cover: true
 permalink: /404.html
 eleventyExcludeFromCollections: true
+robots: "noindex, follow"
 ---
 
 <div class="dd-embossed">
-	<h1 class="display-1 text-danger">404</h1>
-	<h2 class="display-3 mb-4">Page Not Found</h2>
-	<p class="lead text-secondary mb-5">
+	{# One h1 with both parts: screen readers announce "404 Page Not
+	   Found", while the number keeps its big display look. #}
+	<h1 class="mb-4">
+		<span class="d-block display-1 text-danger">404</span>
+		<span class="d-block display-3">Page Not Found</span>
+	</h1>
+	{# text-body-secondary = Bootstrap 5.3's theme-aware muted text
+	   (readable in light AND dark); text-secondary is the fixed grey
+	   theme colour and is too dim on the dark background. #}
+	<p class="lead text-body-secondary mb-5">
 		The page you’re looking for has either moved, vanished, or never existed in the first place.
 		Kind of like your motivation on a Monday?
 	</p>
-	<a href="/" class="btn btn-success">Pretend this never happened</a>
+	{# btn-primary: the brand/main-action colour (see index.njk). #}
+	<a href="/" class="btn btn-primary">Pretend this never happened</a>
 </div>

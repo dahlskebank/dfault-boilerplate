@@ -1,1 +1,5 @@
 _site/
+# Not site CSS: scratch, docs (design exports may contain .css) and archived old code.
+_temp/
+docs/
+archive/

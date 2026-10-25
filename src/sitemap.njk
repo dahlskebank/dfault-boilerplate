@@ -5,19 +5,43 @@
 #
 #  Generates /sitemap.xml for search engines.
 #  Automatically includes all pages in collections.all
-#  (excludes 404, 403, robots.txt, webmanifest, and this file
-#  since they all have eleventyExcludeFromCollections: true).
+#  (excludes 404, 403, robots.txt, webmanifest, llms.txt, the
+#  cheatsheet and this file, since they all have
+#  eleventyExcludeFromCollections: true).
+#
+#  Also left out:
+#  - pages whose robots value contains "noindex"
+#    (front matter `robots: "noindex, follow"`, or site.robots)
+#    — listing a noindex page here would send mixed signals;
+#  - pages with no URL (`permalink: false`);
+#  - everything, when site.noindexSite is true (staging site).
+#
+#  <lastmod> = when the page last REALLY changed:
+#  `lastModified` (eleventy.config.js) asks git for the file's
+#  last commit date and falls back to the file's modified time
+#  for uncommitted files. Override per page with QUOTED front
+#  matter: lastmod: "2026-10-24" (unquoted YAML dates become
+#  Date objects; those are converted below too).
+#
+#  The xmlns value must be exactly the sitemaps.org one —
+#  Search Console / Bing reject anything else.
 # ============================================================
 permalink: /sitemap.xml
 eleventyExcludeFromCollections: true
 layout: false
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.w3.org/2000/sitemaps/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- if not site.noindexSite %}
 {%- for entry in collections.all %}
+{%- set entryRobots = entry.data.robots or site.robots or "" %}
+{%- if entry.url and not ("noindex" in entryRobots) %}
+{%- set lastmod = entry.data.lastmod or (entry.inputPath | lastModified) %}
 	<url>
 		<loc>{{ site.url }}{{ entry.url }}</loc>
-		<lastmod>{{ entry.date | isoDate }}</lastmod>
+		<lastmod>{{ lastmod.toISOString() if lastmod.toISOString else lastmod }}</lastmod>
 	</url>
+{%- endif %}
 {%- endfor %}
+{%- endif %}
 </urlset>

@@ -19,22 +19,41 @@ Thumbs.db
 *.swp
 *.swo
 
-# VS Code — share the Peacock theme settings, ignore everything else
-# (tasks.json/launch.json tend to accumulate machine-specific paths)
+# VS Code — share the workspace settings (Peacock colours etc.) and the
+# Deploy task; ignore everything else (launch.json and friends tend to
+# accumulate machine-specific paths). tasks.json is safe to share: it has
+# no paths of its own — the Git Bash path lives in .npmrc.
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+!.vscode/tasks.json
 
 # Environment variables / secrets
 .env
 .env.*
 !.env.example
+.htpasswd*
 
 # Deploy lock (created by flock in deploy.sh)
 .deploy.lock
 
-# Temp/scratch files
-_temp/
+# Deploy batch file and logs — they belong in _temp/deploy/ (ignored
+# anyway); these lines catch one that lands anywhere else, e.g. the root
+deploy.batch
+*.log
 
-# Claude Code local settings
+# Temp/scratch files — disposable, never committed. Everything in the
+# root _temp/ folder is ignored EXCEPT its README.md, which explains
+# the folder. (`/_temp/*` + `!` works; `_temp/` would ignore the folder
+# itself, and git can't un-ignore a file inside an ignored folder.)
+/_temp/*
+!/_temp/README.md
+
+# Claude Code local settings and local-only notes
 .claude/
+CLAUDE.local.md
+.claude.local.md
+
+# Superpowers plugin scratch (brainstorm sessions etc.) and git worktrees
+.superpowers/
+.worktrees/

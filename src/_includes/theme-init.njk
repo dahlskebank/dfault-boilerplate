@@ -9,38 +9,162 @@
 
 	Two independent state slots, both stored in localStorage:
 
-	  - "theme" → light / dark / high-contrast-{dark,light,custom}
-	    Handled by theme-toggle.js.
+	  - "theme" → an id from src/_data/themes.js (dark, light or
+	    high-contrast-*). No key = "auto": follow the OS setting.
+	    UI: theme-toggle.js.
 
 	  - "flat"  → "on" or absent
 	    Handled by flat-toggle.js. Orthogonal to theme, composes
-	    with any of them.
+	    with any of them. Only read while site.flatToggle isn't
+	    false: switch the feature off and returning visitors are
+	    no longer stuck in flat mode with no button to leave it.
 
-	Must be kept in sync with theme-toggle.js and flat-toggle.js
-	(same class names, same localStorage keys). This script does
-	NOT write to localStorage; the toggle scripts do.
+	It also defines two small globals, so these rules live in ONE
+	place instead of being copied into every toggle script:
+
+	  window.ddStore — localStorage that never throws.
+	    Chrome's "Don't allow sites to save data" setting (or
+	    blocked cookies for the site) makes EVERY localStorage call
+	    throw a SecurityError. Unguarded, that stopped this script
+	    before it set data-bs-theme (dark-OS visitors got light
+	    Bootstrap), and stopped the toggle scripts before they wired
+	    their buttons. With the wrapper, blocked storage just means
+	    "nothing saved": the OS default and in-page switching still
+	    work for that page view. (Same idea as reservedekk.no's
+	    lsGet/lsSet.)
+	      ddStore.get(key)         → the string, or null
+	      ddStore.set(key, value)  → value null/undefined = remove
+
+	  window.ddTheme — the theme state and the ONE function that
+	    paints <html>. theme-toggle.js (buttons) and
+	    bootswatch-switcher.js call it; neither keeps its own copy
+	    of the theme or class list any more.
+	      ddTheme.choice           → saved id, or "auto"
+	      ddTheme.choose(id)       → save + paint ("auto" = forget)
+	      ddTheme.setBootswatch(n) → dark-only Bootswatch theme? (below)
+	      ddTheme.apply()          → paint; fires "dd:themechange"
+
+	The ids come from themes.js through the Nunjucks loop below, so
+	a theme added there is known here automatically. A saved value
+	that isn't in the list (an old theme name, a typo) is ignored,
+	instead of being added to <html> as a random class.
+
+	The explanations inside the <script> are Nunjucks comments
+	(curly brace + hash, like this block) on purpose: they are
+	stripped at build time, so they don't ship in every page the
+	way /* */ comments would. (A Nunjucks comment can't contain
+	its own closing marker, which is why it isn't spelled out.)
+
+	This script does NOT write to localStorage on load; only
+	ddTheme.choose() (a click) does.
 	============================================================ #}
 <script>
 (function () {
 	var html = document.documentElement;
 
-	/* Theme (light / dark / high-contrast-*) */
-	var hcClasses = ["high-contrast-dark", "high-contrast-light", "high-contrast-custom"];
-	var theme = localStorage.getItem("theme");
-	if (!theme) {
-		theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	{# --- Safe storage (window.ddStore) --- #}
+	function get(key) {
+		try { return localStorage.getItem(key); } catch (e) { return null; }
 	}
-	hcClasses.forEach(function (c) { html.classList.remove(c); });
-	html.removeAttribute("data-bs-theme");
-	if (theme === "dark" || theme === "light") {
-		html.setAttribute("data-bs-theme", theme);
-	} else {
-		html.classList.add(theme);
+	function set(key, value) {
+		try {
+			if (value == null) localStorage.removeItem(key);
+			else localStorage.setItem(key, value);
+		} catch (e) { /* storage blocked: the choice just isn't remembered */ }
 	}
+	window.ddStore = { get: get, set: set };
 
-	/* Flat utility (binary, orthogonal) */
-	if (localStorage.getItem("flat") === "on") {
+	{# --- Theme list, rendered from src/_data/themes.js ---
+		Only id + group are inlined (labels and icons stay in the
+		buttons). `| dump` writes a proper JS string (JSON.stringify),
+		`| safe` stops HTML escaping inside the <script>. #}
+	var themes = [{% for t in themes %}{ id: {{ t.id | dump | safe }}, group: {{ t.group | dump | safe }} }{% if not loop.last %}, {% endif %}{% endfor %}];
+	var ids = [];
+	var hcClasses = [];
+	themes.forEach(function (t) {
+		ids.push(t.id);
+		if (t.group === "hc") hcClasses.push(t.id);
+	});
+
+	{# Bootswatch themes that only have a dark palette (src/_data/cdn.js).
+		While one is active, Light / Auto would just mix palettes, so every
+		non-HC choice is shown as dark. Forced dark = Bootswatch's stock
+		[data-bs-theme=dark] palette, so Cyborg, Superhero, Quartz and Vapor
+		look different from their bootswatch.com preview (details in cdn.js).
+		`or []` / `or "default"` (here and below): `dump` of a missing key
+		prints NOTHING, and `var x = ;` is a syntax error that would stop
+		this whole script (no data-bs-theme, no ddStore, dead buttons). #}
+	var darkOnlyThemes = {{ (cdn.bootswatch.darkOnly or []) | dump | safe }};
+	var osDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+	var ddTheme = {
+		ids: ids,
+		hcClasses: hcClasses,
+		choice: "auto",
+		darkOnly: false,
+
+		{# What a choice looks like right now: an HC class name, or the
+			data-bs-theme value ("auto" → whatever the OS says). #}
+		resolve: function (choice) {
+			if (hcClasses.indexOf(choice) !== -1) return choice;
+			if (ddTheme.darkOnly) return "dark";
+			if (choice === "auto" || ids.indexOf(choice) === -1) return osDark.matches ? "dark" : "light";
+			return choice;
+		},
+
+		{# HC = a class on <html> (high-contrast.css); every other theme =
+			data-bs-theme="<id>" (Bootstrap colour modes). The event lets
+			the toggle buttons follow along. #}
+		apply: function () {
+			var theme = ddTheme.resolve(ddTheme.choice);
+			hcClasses.forEach(function (c) { html.classList.remove(c); });
+			html.removeAttribute("data-bs-theme");
+			if (hcClasses.indexOf(theme) !== -1) {
+				html.classList.add(theme);
+			} else {
+				html.setAttribute("data-bs-theme", theme);
+			}
+			document.dispatchEvent(new CustomEvent("dd:themechange", { detail: { choice: ddTheme.choice, theme: theme } }));
+		},
+
+		{# A click in the theme menu. "auto" REMOVES the saved key, so the
+			page follows the OS again (theme-init then finds no key). #}
+		choose: function (choice) {
+			if (ids.indexOf(choice) === -1) return;
+			ddTheme.choice = choice;
+			set("theme", choice === "auto" ? null : choice);
+			ddTheme.apply();
+		},
+
+		{# Called by bootswatch-switcher.js once a new theme has loaded. #}
+		setBootswatch: function (name) {
+			ddTheme.darkOnly = darkOnlyThemes.indexOf(name) !== -1;
+			ddTheme.apply();
+		}
+	};
+	window.ddTheme = ddTheme;
+
+	var saved = get("theme");
+	if (ids.indexOf(saved) !== -1) ddTheme.choice = saved;
+
+	{# The Bootswatch theme this page will show: the switcher's saved pick
+		(only while the switcher is on, so a stale pick is ignored once it's
+		off) or the site default from site.json. #}
+	var bootswatch = {% if site.bootswatchSwitcher %}get("bootswatchTheme") || {% endif %}{{ (site.defaultBootswatchTheme or "default") | dump | safe }};
+	ddTheme.darkOnly = darkOnlyThemes.indexOf(bootswatch) !== -1;
+
+	ddTheme.apply();
+
+	{# Follow OS changes live while the choice is "auto" (e.g. Android's
+		dark theme switching on at sunset). #}
+	osDark.addEventListener("change", function () {
+		if (ddTheme.choice === "auto") ddTheme.apply();
+	});
+{% if site.flatToggle !== false %}
+	{# Flat utility (binary, orthogonal) #}
+	if (get("flat") === "on") {
 		html.classList.add("flat");
 	}
+{% endif %}
 })();
 </script>

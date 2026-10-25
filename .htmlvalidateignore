@@ -4,4 +4,6 @@
 # aria-label, password inputs without autocomplete, carousel arrows with
 # aria-hidden). They're inherent to the demos, not bugs in this site.
 # Skip the page from validation; the rest of the site still gets checked.
-_site/cheatsheet/**
+# `**/` instead of `_site/` so a scratch build inside the project
+# (e.g. _temp/build-x/cheatsheet/, see CLAUDE.md) is skipped too.
+**/cheatsheet/**

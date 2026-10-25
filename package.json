@@ -1,24 +1,33 @@
 {
   "name": "eleventy-bootstrap-boilerplate",
-  "version": "1.0.0",
-  "description": "Eleventy 3.0 + Bootstrap 5.3 boilerplate with theme switching, SEO, accessibility, and Apache hosting",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Eleventy 3 + Bootstrap 5.3 boilerplate with theme switching, SEO, accessibility, and Apache hosting",
+  "engines": {
+    "node": "^22.22.0 || >=24.8.0"
+  },
   "scripts": {
     "start": "eleventy --serve",
-    "build": "npm run lint:css && eleventy && html-validate \"_site/**/*.html\" && node scripts/minify.js",
+    "watch": "eleventy --watch",
+    "build": "npm run lint:css && npm run lint:js && npm run clean && eleventy && html-validate \"_site/**/*.html\" && npm run check:refs && node scripts/minify.js",
+    "clean": "node scripts/clean.js",
     "validate": "html-validate \"_site/**/*.html\"",
     "lint:css": "stylelint \"src/assets/css/*.css\"",
+    "lint:js": "node scripts/check-js.js",
+    "check:refs": "node scripts/check-refs.js",
     "deploy": "npm run build && ./deploy.sh _site",
+    "deploy:batch": "node scripts/deploy-batch.mjs",
     "bump:patch": "node scripts/bump-version.js patch",
     "bump:minor": "node scripts/bump-version.js minor",
     "bump:major": "node scripts/bump-version.js major"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.0",
+    "@11ty/eleventy": "^3.1.7",
     "clean-css": "^5.3.3",
-    "html-validate": "^10.15.0",
-    "prettier": "^3.8.1",
-    "stylelint": "^17.14.1",
+    "html-validate": "^11.17.0",
+    "prettier": "^3.9.10",
+    "stylelint": "^17.16.0",
     "stylelint-config-recommended": "^18.0.0",
-    "terser": "^5.46.1"
+    "terser": "^5.51.2"
   }
 }

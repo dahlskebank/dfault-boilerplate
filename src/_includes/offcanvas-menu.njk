@@ -7,73 +7,128 @@
 	 both mobile and desktop.  Reads the same nav.js data as
 	 the navbar.
 
-	 For dropdown parents (items with children):
+	 For dropdown parents (items with children or dynamicChildren):
 	   - A section header shows the parent label
-	   - The parent itself becomes the first link ("All [label]")
+	   - The parent itself becomes the first link ("All [label]",
+	     or the item's `indexLabel`)
 	   - Children are listed below with slight indentation
+	   - Children with a different `group` than the one before them
+	     get an inset divider (.dd-offcanvas-divider-inset), a break
+	     WITHIN the section rather than a new section
+	   Both child shapes (nav.js entry or collection page) and the
+	   group rule are explained at the top of navbar.njk.
 
-	 Active state uses page.url, same logic as navbar.
+	 Active state uses page.url, same logic as navbar.njk
+	 (exact match → aria-current="page"; a page below a top-level
+	 item → .active + aria-current="true"). Disabled items drop
+	 their href and get aria-disabled="true", like the navbar.
+
+	 offcanvas-end: the panel slides in from the RIGHT, the same
+	 side as the hamburger that opens it (Bootstrap's own
+	 offcanvas-navbar example pairs them the same way).
+
+	 The page links sit in their own <nav aria-label="Site menu">
+	 landmark. The label must differ from the navbar's "Main" —
+	 two navigation landmarks with the same name are ambiguous
+	 for screen-reader users (html-validate: unique-landmark).
+	 The theme/flat/Bootswatch controls below it are settings,
+	 not navigation, so they stay outside the <nav>.
 	 ============================================================
 #}
 
-<div id="dd-offcanvas" class="offcanvas offcanvas-start dd-offcanvas-menu"
+<div id="dd-offcanvas" class="offcanvas offcanvas-end dd-offcanvas-menu"
 	tabindex="-1" aria-labelledby="dd-offcanvas-label">
 
 	<div class="offcanvas-header">
-		<h5 class="offcanvas-title" id="dd-offcanvas-label">{{ site.name }}</h5>
+		{# A <p> styled as .h5 instead of an <h5>: this markup comes before
+		   the page's own <h1>, so a real heading here put "My Site" (h5)
+		   first in every page's outline for crawlers and LLM extractors.
+		   aria-labelledby works with any element. #}
+		<p class="offcanvas-title h5" id="dd-offcanvas-label">{{ site.name }}</p>
 		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 	</div>
 
 	<div class="offcanvas-body dd-offcanvas-nav">
 
-		{# --- Home link (always first) --- #}
-		<a class="nav-link{% if page.url == '/' %} active{% endif %}" href="/"
-			{% if page.url == '/' %}aria-current="page"{% endif %}>
-			<i class="bi bi-house-door me-1"></i> Home
-		</a>
+		<nav aria-label="Site menu">
 
-		<div class="dd-offcanvas-divider"></div>
+			{# --- Home link (always first) --- #}
+			<a class="nav-link{% if page.url == '/' %} active{% endif %}" href="/"
+				{% if page.url == '/' %}aria-current="page"{% endif %}>
+				<i class="bi bi-house-door me-1" aria-hidden="true"></i> Home
+			</a>
 
-		{% for item in nav %}
-			{% if item.children %}
-				{# --- Section with children --- #}
-				<div class="dd-offcanvas-section">
-					<i class="{{ item.icon }} me-1"></i> {{ item.label }}
-				</div>
+			<div class="dd-offcanvas-divider"></div>
 
-				{# Parent as a clickable link (only shown if item has a url) #}
-				{% if item.url %}
-					<a class="nav-link dd-offcanvas-child{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
-						href="{{ item.url }}"
-						{% if page.url == item.url %}aria-current="page"{% endif %}>
-						<i class="{{ item.icon }} me-1"></i> All {{ item.label }}
+			{% for item in nav %}
+				{# Resolve children: dynamicChildren beats static children (navbar.njk). #}
+				{% set children = item.children %}
+				{% if item.dynamicChildren %}
+					{% set children = collections[item.dynamicChildren] %}
+				{% endif %}
+				{% if children and children.length %}
+					{# --- Section with children --- #}
+					<div class="dd-offcanvas-section">
+						{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %} {{ item.label }}
+					</div>
+
+					{# Parent as a clickable link (only shown if item has a url) #}
+					{% if item.url %}
+						<a class="nav-link dd-offcanvas-child{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
+							{% if item.disabled %}aria-disabled="true"{% else %}href="{{ item.url }}"{% endif %}
+							{% if page.url == item.url %}aria-current="page"{% endif %}>
+							{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %} {{ item.indexLabel or ("All " ~ item.label) }}
+						</a>
+					{% endif %}
+
+					{# Children — static (nav.js) or collection entries, same
+					   branching as navbar.njk #}
+					{% for child in children %}
+						{% if child.data %}
+							{% set childLabel = child.data.navLabel or child.data.title or child.url %}
+							{% set childIcon = child.data.icon %}
+							{% set childGroup = child.data.group %}
+							{% set childDisabled = false %}
+							{% set childExternal = false %}
+						{% else %}
+							{% set childLabel = child.label %}
+							{% set childIcon = child.icon %}
+							{% set childGroup = child.group %}
+							{% set childDisabled = child.disabled %}
+							{% set childExternal = child.external %}
+						{% endif %}
+						{% if loop.index0 > 0 %}
+							{% set prevChild = children[loop.index0 - 1] %}
+							{% set prevGroup = prevChild.data.group if prevChild.data else prevChild.group %}
+							{% if prevGroup != childGroup %}<div class="dd-offcanvas-divider dd-offcanvas-divider-inset"></div>{% endif %}
+						{% endif %}
+						<a class="nav-link dd-offcanvas-child{% if childDisabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
+							{% if childDisabled %}aria-disabled="true"{% else %}href="{{ child.url }}"{% endif %}
+							{% if childExternal %}target="_blank" rel="noopener"{% endif %}
+							{% if page.url == child.url %}aria-current="page"{% endif %}>
+							{% if childIcon %}<i class="bi {{ childIcon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %}
+							{{ childLabel }}
+							{% if childExternal %}<i class="bi bi-box-arrow-up-right ms-auto small" aria-hidden="true"></i><span class="visually-hidden">(opens in a new tab)</span>{% endif %}
+						</a>
+					{% endfor %}
+
+					<div class="dd-offcanvas-divider"></div>
+				{% else %}
+					{# --- Plain link (isCurrent / isSection: see navbar.njk) --- #}
+					{% set isCurrent = (page.url == item.url) %}
+					{% set isSection = (not isCurrent and item.url and not item.external and item.url != "/" and page.url and page.url.indexOf(item.url) == 0) %}
+					<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if isCurrent or isSection %} active{% endif %}"
+						{% if item.disabled %}aria-disabled="true"{% else %}href="{{ item.url }}"{% endif %}
+						{% if isCurrent %}aria-current="page"{% elif isSection %}aria-current="true"{% endif %}
+						{% if item.external %}target="_blank" rel="noopener"{% endif %}>
+						{% if item.icon %}<i class="bi {{ item.icon | replace('bi ', '') }} me-1" aria-hidden="true"></i>{% endif %}
+						{{ item.label }}
+						{% if item.external %}<i class="bi bi-box-arrow-up-right ms-auto small" aria-hidden="true"></i><span class="visually-hidden">(opens in a new tab)</span>{% endif %}
 					</a>
 				{% endif %}
+			{% endfor %}
 
-				{# Children #}
-				{% for child in item.children %}
-					<a class="nav-link dd-offcanvas-child{% if child.disabled %} disabled{% endif %}{% if page.url == child.url %} active{% endif %}"
-						href="{{ child.url }}"
-						{% if child.external %}target="_blank" rel="noopener"{% endif %}
-						{% if page.url == child.url %}aria-current="page"{% endif %}>
-						{% if child.icon %}<i class="{{ child.icon }} me-1"></i>{% endif %}
-						{{ child.label }}
-					</a>
-				{% endfor %}
-
-				<div class="dd-offcanvas-divider"></div>
-			{% else %}
-				{# --- Plain link --- #}
-				<a class="nav-link{% if item.disabled %} disabled{% endif %}{% if page.url == item.url %} active{% endif %}"
-					href="{{ item.url }}"
-					{% if page.url == item.url %}aria-current="page"{% endif %}
-					{% if item.external %}target="_blank" rel="noopener"{% endif %}>
-					{% if item.icon %}<i class="{{ item.icon }} me-1"></i>{% endif %}
-					{{ item.label }}
-					{% if item.external %}<i class="bi bi-box-arrow-up-right ms-auto small"></i>{% endif %}
-				</a>
-			{% endif %}
-		{% endfor %}
+		</nav>
 
 		{# --- Dark/Light/Contrast toggle (from themes.js) --- #}
 		{% include "theme-toggle-offcanvas.njk" %}

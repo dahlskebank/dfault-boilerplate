@@ -54,13 +54,16 @@
 		"statusBar.inactiveBackground": "#3c4f65"
 	},
 
-	// Hide worklog files from the Todo Tree extension. _md/worklog/ holds
-	// historical checkpoint snapshots (VRFY/TEST/PEND items captured at
-	// checkpoint time, plus swept DONE lines). The live action queue is
-	// _md/TESTING.md — that stays scanned. Without this, Todo Tree
-	// surfaces every old worklog entry as if it were live.
+	// Hide folders whose TODO/FIXME lines aren't ours to act on from the
+	// Todo Tree extension: _temp/ (disposable scratch), archive/ (snapshots
+	// of old code), docs/reference/ (third-party docs) and docs/design/
+	// (design exports kept as delivered). Without this, Todo Tree lists
+	// every TODO in a downloaded library or old export as if it were live.
 	"todo-tree.filtering.excludeGlobs": [
-		"**/_md/worklog/**"
+		"**/_temp/**",
+		"**/archive/**",
+		"**/docs/reference/**",
+		"**/docs/design/**"
 	]
 	// `window.title` lives in the global user settings so every project's
 	// VSCode window shows its folder name in the taskbar, not just this one.
