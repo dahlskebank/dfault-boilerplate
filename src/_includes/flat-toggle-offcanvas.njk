@@ -1,0 +1,32 @@
+{#
+	 ============================================================
+		FLAT TOGGLE (OFFCANVAS)  —  src/_includes/flat-toggle-offcanvas.njk
+	 ============================================================
+
+	 Single-button binary toggle for the .flat utility.
+	 Composes with any theme — you can use Flat together with
+	 Light, Dark, or any of the High Contrast modes.
+
+	 Wired up by flat-toggle.js, which:
+	   - listens on [data-flat-toggle]
+	   - flips aria-pressed
+	   - swaps the icon (bi-square ⇄ bi-square-fill)
+	   - swaps the label inside .dd-flat-label
+
+	 Included by offcanvas-menu.njk, between the theme toggle
+	 and the Bootswatch switcher.
+	 ============================================================
+#}
+
+<div class="dd-offcanvas-divider"></div>
+<div class="dd-offcanvas-section">
+	<i class="bi bi-bounding-box me-1"></i> Flat Mode
+</div>
+<div class="px-3 pb-3">
+	<button type="button"
+			class="btn btn-sm btn-outline-secondary w-100"
+			data-flat-toggle
+			aria-pressed="false">
+		<i class="bi bi-square me-1"></i> <span class="dd-flat-label">Flat: Off</span>
+	</button>
+</div>

@@ -1,0 +1,39 @@
+/*
+	Flat utility  —  src/assets/css/flat.css
+	Author:      Daniel Dahl
+	License:     WTFPL  (http://www.wtfpl.net/txt/copying/)
+
+	Strips border-radius, box-shadow, and text-shadow site-wide.
+	Orthogonal to the theme system: composes with light/dark/HC.
+
+	Toggled via flat-toggle.js (which adds/removes .flat on <html>)
+	and the offcanvas button in flat-toggle-offcanvas.njk.
+
+	Two-layer pattern matching high-contrast.css:
+
+	  1. Redefine Bootstrap's --bs-border-radius-* tokens at the
+	     class level so Bootstrap components flatten themselves
+	     natively (no !important needed for token-driven CSS).
+
+	  2. `*` fallback for non-token CSS (Tailwind utilities,
+	     hardcoded radii, third-party widgets).
+*/
+
+/*--------------------------------------------------------------
+1.0  Flat utility
+--------------------------------------------------------------*/
+
+.flat {
+	--bs-border-radius:      0;
+	--bs-border-radius-sm:   0;
+	--bs-border-radius-lg:   0;
+	--bs-border-radius-xl:   0;
+	--bs-border-radius-xxl:  0;
+	--bs-border-radius-pill: 0;
+}
+
+.flat * {
+	box-shadow: none !important;
+	text-shadow: none !important;
+	border-radius: 0 !important;
+}

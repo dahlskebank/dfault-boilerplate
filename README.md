@@ -102,11 +102,11 @@ src/
 │   └── bootswatch-switcher.njk  # 25-theme floating switcher
 ├── assets/
 │   ├── css/style.css   # Your custom styles
-│   ├── js/             # JavaScript files
+│   ├── js/             # JS sources — site-wide files are bundled at build time
 │   └── img/            # Images, favicons, OG image
 ├── index.njk           # Home page
 ├── about.njk           # About page
-├── contact.njk         # Contact page
+├── showcase.njk        # Component showcase page
 ├── legal.njk           # Privacy, cookies, terms
 ├── 404.njk             # Error page
 ├── 403.njk             # Forbidden page
@@ -126,9 +126,42 @@ src/
 
 The minifier walks `_site/assets/`, compresses `.css` with clean-css and `.js` with terser, skipping files already named `.min.*`.
 
+**JS bundling:** the site-wide scripts (dfault, theme-toggle, flat-toggle, bootswatch-switcher, offcanvas-init, dd-copy) stay as separate source files in `src/assets/js/`, but every build concatenates them into a single `_site/assets/js/bundle.js` (see the "JS BUNDLING" section in `eleventy.config.js`) — one HTTP request instead of six. Page-specific scripts loaded via `extraScripts:` frontmatter are not bundled.
+
 The HTML validator runs against `_site/**/*.html` after Eleventy renders and before minification, so any markup errors fail the build before the output gets compressed. Configuration lives in `.htmlvalidate.json`. To bypass temporarily during a migration, remove the `html-validate` step from the `build` script in `package.json`.
 
 The CSS linter runs *before* Eleventy, so a broken stylesheet fails fast: `stylelint` checks `src/assets/css/*.css` against `stylelint-config-recommended` — possible errors only (parse errors, duplicate selectors, unknown properties and units), not formatting, which is Prettier's job. A parse error fails the build instead of shipping silently. Configuration lives in `stylelint.config.mjs` (`no-descending-specificity` is off there — it false-positives on the deliberately last-ordered theme overrides); `.stylelintignore` keeps the minified `_site/` output out of it. In particular, never write `*/` inside a CSS comment — a path glob like `/order/*/` closes the comment early and silently kills every rule below it until the next `*/`.
+
+## Runtime data — `.data/<project>/` convention
+
+If a project ever needs to persist data (SQLite databases, user-uploaded files, generated reports, application logs, runtime caches) that must survive both local `_site/` rebuilds AND `lftp mirror --delete` deploys, **don't** put it inside the project tree. Park it at the workspace/home root, parallel to your project folders:
+
+```
+LOCAL                           PROD (Domeneshop, etc.)
+E:\www\                         /home/<user>/
+├── .data\                      ├── .data/
+│   ├── <project-1>\            │   ├── <project-1>/
+│   └── <project-2>\            │   └── <project-2>/
+└── sub\                        └── <subdomains>/
+    └── <project>\                  └── <project>/   ← docroot
+```
+
+PHP / Node references the absolute path through a per-environment, gitignored `src/_config/paths.php`. The deploy excludes that file (and any other per-environment config) so prod values are set once and never overwritten.
+
+**Mental test for what belongs in `.data/`:**
+
+> "If I `rm -rf` the project tomorrow, do I want this back?" → yes → `.data/`
+> "If I deploy with `--delete` tomorrow, must this survive?" → yes → `.data/`
+
+**What does NOT belong:**
+
+- Source code, build output (`_site/`)
+- Public assets (must be web-accessible)
+- Apache `.htpasswd` files (Apache reads them at request time, not your project)
+- `.env` for `deploy.sh` (used at deploy time, not runtime)
+- SSH keys (their own concern)
+
+The boilerplate doesn't ship code for this — most static sites don't need it. The first dynamic project (e.g. one with a SQLite-backed admin) introduces the pattern; subsequent projects copy it.
 
 ## Deployment
 

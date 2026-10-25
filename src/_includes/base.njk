@@ -19,16 +19,32 @@
 	 FRONT MATTER VARIABLES:
 	 ----------------------
 	 Pages can set these in their front matter (the --- block):
-		 title       → Used in <title> and meta tags (falls back to site.name)
-		 description → Meta description (falls back to site.description)
-		 bodyClass   → CSS classes on <body> (default: "d-flex h-100 cover-container")
-		 mainClass   → CSS classes on <main> (default: "px-3")
+		 title          → Used in <title> and meta tags (falls back to site.name)
+		 description    → Meta description (falls back to site.description)
+		 bodyClass      → CSS classes on <body> (default: "d-flex h-100 cover-container")
+		 mainClass      → CSS classes on <main> (default: "px-3")
+		 containerClass → Bootstrap container variant wrapping <main> + footer
+		                  (default: "container"). Use "container-fluid" for a
+		                  full-width page (e.g. wide data tables), or one of the
+		                  responsive variants like "container-xxl".
 
-	 NUNJUCKS BLOCKS:
-	 ----------------
-	 {% block head %}{% endblock %} and {% block scripts %}{% endblock %}
-	 let individual pages inject extra <head> content or scripts.
-	 Pages that don't need these simply ignore the blocks.
+	 PER-PAGE EXTRAS (head + scripts):
+	 ---------------------------------
+	 Pages inject extra <head> stylesheets and end-of-body scripts via
+	 frontmatter arrays — NOT via Nunjucks `{% block %}`.
+
+	 Why: with `layout: base.njk` frontmatter, Eleventy renders the page
+	 standalone before injecting it into `{{ content | safe }}`, so child
+	 `{% block %}` overrides never reach this parent. Frontmatter-driven
+	 arrays are Eleventy's recommended per-page-extras mechanism.
+
+	 Example frontmatter:
+		 extraCss: ["/assets/css/expiry.css"]
+		 extraScripts:
+		   - { src: "https://cdn.sheetjs.com/.../xlsx.full.min.js", cdn: true }
+		   - "/assets/js/expiry.js"
+
+	 See the inline comments at the loop sites below for full schema.
 	 ============================================================ #}
 
 <!DOCTYPE html>
@@ -43,8 +59,20 @@
 	{# --- CSS, fonts, favicons, analytics --- #}
 	{% include "head-assets.njk" %}
 
-	{# --- Extra head content (pages can override this block) --- #}
-	{% block head %}{% endblock %}
+	{# --- Page-specific stylesheets ---
+		 Pages opt in via the `extraCss:` frontmatter array. Each entry is
+		 an href string. Local paths get the build's cache-bust query
+		 appended automatically; anything starting with `http` is passed
+		 through untouched so external CDN stylesheets keep their own
+		 versioning intact.
+
+		 Why frontmatter and not `{% block head %}`? Eleventy's `layout:`
+		 frontmatter renders the page standalone first, then injects the
+		 rendered HTML into `{{ content | safe }}` here — so child-template
+		 `{% block %}` overrides don't reach the parent. Frontmatter is the
+		 official Eleventy-way of passing per-page extras to a layout. #}
+	{% if extraCss %}{% for href in extraCss %}<link rel="stylesheet" href="{{ href }}{% if href.indexOf("http") != 0 %}?v={{ cacheBust }}{% endif %}">
+	{% endfor %}{% endif %}
 </head>
 
 <body class="{{ bodyClass | default('d-flex h-100 cover-container') }}">
@@ -60,7 +88,7 @@
 
 	{# --- Page content wrapper --- #}
 	<div id="dd-page" class="w-100 d-flex flex-column">
-		<div class="container d-flex w-100 h-100 p-3 mx-auto flex-column">
+		<div class="{{ containerClass | default('container') }} d-flex w-100 h-100 p-3 mx-auto flex-column">
 
 			{# --- Flex spacer — mb-auto pushes main+footer down,
 				 preserving the cover-page vertical centering. --- #}
@@ -85,13 +113,29 @@
 	<script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe-lightbox.umd.min.js"
 					integrity="sha384-IiBVbUz6+U+Tbm/ijO2P0XRwcVzNfrMzloNLkrqHkbi6w5H0v6ie4fI9BIO4SwdK"
 					crossorigin="anonymous"></script>
-	<script src="/assets/js/dfault.js?v={{ cacheBust }}"></script>
-	<script src="/assets/js/theme-toggle.js?v={{ cacheBust }}"></script>
-	{% if site.bootswatchSwitcher %}<script src="/assets/js/bootswatch-switcher.js?v={{ cacheBust }}"></script>{% endif %}
-	<script src="/assets/js/offcanvas-init.js?v={{ cacheBust }}"></script>
+	{# --- Site-wide JS bundle ---
+		 One request instead of six. The bundle is concatenated at build
+		 time by the "JS BUNDLING" section in eleventy.config.js from the
+		 separate source files in src/assets/js/ (dfault, theme-toggle,
+		 flat-toggle, bootswatch-switcher*, offcanvas-init, dd-copy).
+		 *bootswatch-switcher is only included when site.bootswatchSwitcher
+		 is true. Edit the source files as usual — every build (and every
+		 --watch rebuild) regenerates the bundle. #}
+	<script src="/assets/js/bundle.js?v={{ cacheBust }}"></script>
 
-	{# --- Extra scripts (pages can override this block) --- #}
-	{% block scripts %}{% endblock %}
+	{# --- Page-specific scripts ---
+		 Pages opt in via the `extraScripts:` frontmatter array. Each entry
+		 is either a string (interpreted as a local non-module script — gets
+		 cache-bust appended) or an object with shape:
+			 { src, type?, cdn?, integrity?, crossorigin? }
+		 - `type: "module"` emits a module script (for ES-module entry points).
+		 - `cdn: true` skips the cache-bust suffix (use for third-party CDN URLs).
+		 - `integrity` + `crossorigin` pass through to the <script> tag (SRI).
+		 See the `extraCss` comment in <head> for why this is frontmatter-driven
+		 rather than `{% block scripts %}`. #}
+	{% if extraScripts %}{% for s in extraScripts %}{% if s is string %}<script src="{{ s }}?v={{ cacheBust }}"></script>
+	{% else %}<script {% if s.type %}type="{{ s.type }}" {% endif %}src="{{ s.src }}{% if not s.cdn %}?v={{ cacheBust }}{% endif %}"{% if s.integrity %} integrity="{{ s.integrity }}"{% endif %}{% if s.crossorigin %} crossorigin="{{ s.crossorigin }}"{% endif %}></script>
+	{% endif %}{% endfor %}{% endif %}
 
 	{# --- Cookie consent toast — informational, non-blocking --- #}
 	<div class="position-fixed bottom-0 start-50 translate-middle-x mb-3" style="z-index:1055">
@@ -106,6 +150,9 @@
 			</div>
 		</div>
 	</div>
+
+	{# --- HC SVG duotone filter (referenced by high-contrast.css for .high-contrast-custom) --- #}
+	{% include "hc-svg-filters.njk" %}
 
 </body>
 </html>

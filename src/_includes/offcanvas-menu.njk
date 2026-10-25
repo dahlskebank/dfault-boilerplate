@@ -78,6 +78,9 @@
 		{# --- Dark/Light/Contrast toggle (from themes.js) --- #}
 		{% include "theme-toggle-offcanvas.njk" %}
 
+		{# --- Flat mode toggle (orthogonal to theme — composes with any of the above) --- #}
+		{% include "flat-toggle-offcanvas.njk" %}
+
 		{# --- Bootswatch CSS framework switcher (dev tool, toggle in site.json) --- #}
 		{% if site.bootswatchSwitcher %}
 			{% include "bootswatch-switcher.njk" %}

@@ -1,0 +1,448 @@
+/*
+	High-Contrast Modes (hybrid)  —  src/assets/css/high-contrast.css
+	Author:      Daniel Dahl
+	License:     WTFPL  (http://www.wtfpl.net/txt/copying/)
+
+	Two-layer approach:
+
+	  · Bootstrap 5.3 token map — redefines --bs-* on the HC class
+	    so Bootstrap components recolor themselves natively.
+
+	  · Slim `*` fallback — catches non-token CSS (Tailwind utilities,
+	    hardcoded values, third-party widgets).
+
+	Per mode, you only set --hc-fg and --hc-bg. Everything cascades
+	from those.
+
+	Token list verified against:
+	https://getbootstrap.com/docs/5.3/customize/css-variables/
+
+	BOILERPLATE NOTE:
+	-----------------
+	HC classes are applied to <html> by theme-toggle.js (see
+	src/assets/js/theme-toggle.js). The .high-contrast-custom mode
+	relies on an SVG filter for its image duotone — that SVG lives
+	in src/_includes/hc-svg-filters.njk, included once from base.njk.
+*/
+
+/*--------------------------------------------------------------
+>>> TABLE OF CONTENTS:
+----------------------------------------------------------------
+	 1.0  Per-mode color tokens
+	 2.0  Bootstrap token override
+	 3.0  `*` fallback for non-token CSS
+	 4.0  Links — always underlined
+	 5.0  Buttons — bordered surfaces with inverted hover
+	 6.0  Focus indicators
+	 7.0  SVG icons + placeholders + selection
+	 8.0  Autofill (Chrome)
+	 9.0  Images, video, picture
+	10.0  Iframes (cross-origin embeds)
+	11.0  Background images — strip globally
+	12.0  Bootstrap carousel arrow chrome
+	13.0  SVG duotone filter (markup lives in hc-svg-filters.njk)
+	14.0  Opacity hierarchy
+	15.0  Print
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+1.0  Per-mode color tokens
+
+color-scheme tells the browser how to render its own chrome
+(scrollbars, form controls, autofill). accent-color paints
+native checkboxes / radios / range / progress in one line.
+--------------------------------------------------------------*/
+
+.high-contrast-dark {
+  --hc-fg: #ddd;
+  --hc-bg: #000;
+  --hc-fg-rgb: 221, 221, 221;
+  --hc-bg-rgb: 0, 0, 0;
+  color-scheme: dark;
+  accent-color: var(--hc-fg);
+}
+
+.high-contrast-light {
+  --hc-fg: #000;
+  --hc-bg: #ddd;
+  --hc-fg-rgb: 0, 0, 0;
+  --hc-bg-rgb: 221, 221, 221;
+  color-scheme: light;
+  accent-color: var(--hc-fg);
+}
+
+.high-contrast-custom {
+  --hc-fg: #fff;
+  --hc-bg: #010080;
+  --hc-fg-rgb: 255, 255, 255;
+  --hc-bg-rgb: 1, 0, 128;
+  color-scheme: dark;
+  accent-color: var(--hc-fg);
+}
+
+/*--------------------------------------------------------------
+2.0  Bootstrap token override
+
+Theme color tokens (primary/success/warning/danger/etc) all
+collapse to fg — in a two-color world there's no semantic hue.
+This is also why form validation states stop being distinct
+in HC mode; rely on icons or text labels for meaning instead.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) {
+
+  /* Surface */
+  --bs-body-color:        var(--hc-fg);
+  --bs-body-color-rgb:    var(--hc-fg-rgb);
+  --bs-body-bg:           var(--hc-bg);
+  --bs-body-bg-rgb:       var(--hc-bg-rgb);
+
+  --bs-emphasis-color:    var(--hc-fg);
+  --bs-emphasis-color-rgb: var(--hc-fg-rgb);
+
+  --bs-secondary-color:   var(--hc-fg);
+  --bs-secondary-color-rgb: var(--hc-fg-rgb);
+  --bs-secondary-bg:      var(--hc-bg);
+  --bs-secondary-bg-rgb:  var(--hc-bg-rgb);
+
+  --bs-tertiary-color:    var(--hc-fg);
+  --bs-tertiary-color-rgb: var(--hc-fg-rgb);
+  --bs-tertiary-bg:       var(--hc-bg);
+  --bs-tertiary-bg-rgb:   var(--hc-bg-rgb);
+
+  /* Borders + radii (HC mode is always flat) */
+  --bs-border-color:             var(--hc-fg);
+  --bs-border-color-translucent: var(--hc-fg);
+  --bs-border-radius:    0;
+  --bs-border-radius-sm: 0;
+  --bs-border-radius-lg: 0;
+  --bs-border-radius-xl: 0;
+  --bs-border-radius-xxl: 0;
+  --bs-border-radius-pill: 0;
+
+  /* Links */
+  --bs-link-color:           var(--hc-fg);
+  --bs-link-color-rgb:       var(--hc-fg-rgb);
+  --bs-link-hover-color:     var(--hc-fg);
+  --bs-link-hover-color-rgb: var(--hc-fg-rgb);
+
+  /* Theme colors collapse to fg */
+  --bs-primary:   var(--hc-fg); --bs-primary-rgb:   var(--hc-fg-rgb);
+  --bs-secondary: var(--hc-fg); --bs-secondary-rgb: var(--hc-fg-rgb);
+  --bs-success:   var(--hc-fg); --bs-success-rgb:   var(--hc-fg-rgb);
+  --bs-info:      var(--hc-fg); --bs-info-rgb:      var(--hc-fg-rgb);
+  --bs-warning:   var(--hc-fg); --bs-warning-rgb:   var(--hc-fg-rgb);
+  --bs-danger:    var(--hc-fg); --bs-danger-rgb:    var(--hc-fg-rgb);
+  --bs-light:     var(--hc-fg); --bs-light-rgb:     var(--hc-fg-rgb);
+  --bs-dark:      var(--hc-fg); --bs-dark-rgb:      var(--hc-fg-rgb);
+
+  /* Focus ring uses fg at low alpha */
+  --bs-focus-ring-color: rgba(var(--hc-fg-rgb), 0.5);
+}
+
+/*--------------------------------------------------------------
+3.0  `*` fallback for non-token CSS
+
+backdrop-filter is killed here too — blurred translucent panels
+fight the two-color clarity HC is supposed to deliver.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) * {
+  color: var(--hc-fg) !important;
+  background-color: var(--hc-bg) !important;
+  border-color: currentColor !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Pseudo-elements aren't matched by `*` */
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) *::before,
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) *::after {
+  color: var(--hc-fg) !important;
+  background-color: transparent !important;
+  border-color: currentColor !important;
+}
+
+/* Bootstrap modal backdrop uses hardcoded rgba(0,0,0,0.5) */
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) .modal-backdrop {
+  background-color: var(--hc-fg) !important;
+  opacity: 0.5 !important;
+}
+
+/*--------------------------------------------------------------
+4.0  Links — always underlined
+
+In HC mode, color alone can't signal "link" — there's only one
+color for everything. Underline is the visual marker.
+.btn excluded because button-styled links shouldn't look like
+text links.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) a:not(.btn) {
+  color: var(--hc-fg) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+}
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) a:not(.btn):hover,
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) a:not(.btn):focus {
+  text-decoration-thickness: 2px;
+}
+
+/*--------------------------------------------------------------
+5.0  Buttons — bordered surfaces with inverted hover
+
+Force a 1px border on every button so even chromeless ones
+(.btn-link, icon buttons) read as interactive. Hover/active
+swap fg ⇄ bg — clear feedback, no third color.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(button, .btn, [role="button"],
+      input[type="button"], input[type="submit"], input[type="reset"]) {
+  color: var(--hc-fg) !important;
+  background-color: var(--hc-bg) !important;
+  border: 1px solid currentColor !important;
+}
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(button:hover, .btn:hover, [role="button"]:hover,
+      input[type="button"]:hover, input[type="submit"]:hover,
+      input[type="reset"]:hover,
+      button:active, .btn:active, [role="button"]:active) {
+  color: var(--hc-bg) !important;
+  background-color: var(--hc-fg) !important;
+}
+
+/*--------------------------------------------------------------
+6.0  Focus indicators
+
+Most HC users are keyboard users. Bold outline on every
+interactive element — :focus-visible scopes it to keyboard
+focus only, so mouse clicks don't trigger the outline.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(a, button, .btn, [role="button"],
+      input, select, textarea,
+      [tabindex]):focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+/*--------------------------------------------------------------
+7.0  SVG icons + placeholders + selection
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) svg * {
+  fill: currentColor !important;
+}
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) ::placeholder {
+  color: var(--hc-fg) !important;
+  opacity: 0.75;
+}
+
+/* Selection inverted — full contrast highlight without
+   introducing a third color */
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) ::selection {
+  color: var(--hc-bg) !important;
+  background-color: var(--hc-fg) !important;
+}
+
+/*--------------------------------------------------------------
+8.0  Autofill (Chrome)
+
+Chrome paints autofilled inputs yellow via a hardcoded inset
+shadow that ignores `background-color`. Override with the
+WebKit-specific shadow trick.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) input:-webkit-autofill,
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) input:-webkit-autofill:hover,
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) input:-webkit-autofill:focus,
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--hc-bg) inset !important;
+  -webkit-text-fill-color: var(--hc-fg) !important;
+  caret-color: var(--hc-fg) !important;
+}
+
+/*--------------------------------------------------------------
+9.0  Images, video, picture
+
+  · light  → grayscale (B&W)
+  · dark   → grayscale + invert (negative B&W)
+  · custom → duotone via SVG filter (see 13.0)
+
+<svg> excluded — icons recolor via fill (7.0), not desaturation.
+--------------------------------------------------------------*/
+
+.high-contrast-light :is(img, video, picture) {
+  filter: grayscale(100%) !important;
+}
+
+.high-contrast-dark :is(img, video, picture) {
+  filter: grayscale(100%) invert(100%) !important;
+}
+
+.high-contrast-custom :is(img, video, picture) {
+  filter: url(#hc-duotone-custom) !important;
+}
+
+/*--------------------------------------------------------------
+10.0  Iframes — cross-origin embeds (YouTube, maps, etc.)
+
+Filter applies from outside the iframe so cross-origin works.
+Same family as 9.0, but inversion of cross-origin content
+(player chrome, dynamic UI) can look weird — feel free to
+soften to `grayscale(100%)` only across all three modes if
+the inverted YouTube look bothers you.
+--------------------------------------------------------------*/
+
+.high-contrast-light iframe {
+  filter: grayscale(100%) !important;
+}
+
+.high-contrast-dark iframe {
+  filter: grayscale(100%) invert(100%) !important;
+}
+
+.high-contrast-custom iframe {
+  filter: url(#hc-duotone-custom) !important;
+}
+
+/*--------------------------------------------------------------
+11.0  Background images — strip globally
+
+CSS `filter` applies to the whole element including children,
+so there's no clean global rule for "filter the bg layer only."
+Drop bg-images in HC. Per-element opt-in via .keep-bg-in-hc:
+
+  .keep-bg-in-hc {
+    position: relative;
+    isolation: isolate;
+  }
+  .keep-bg-in-hc::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: inherit;
+    filter: grayscale(100%);
+    z-index: -1;
+  }
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom) *:not(.keep-bg-in-hc) {
+  background-image: none !important;
+}
+
+/*--------------------------------------------------------------
+12.0  Bootstrap carousel arrow chrome
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(.carousel-control-prev,
+      .carousel-control-next,
+      .carousel-control-prev-icon,
+      .carousel-control-next-icon) {
+  background-color: transparent !important;
+}
+
+/*--------------------------------------------------------------
+13.0  SVG duotone filter — required for .high-contrast-custom
+
+The filter <svg> is injected once per page from the partial
+src/_includes/hc-svg-filters.njk (included near </body> in
+base.njk). The filter id "hc-duotone-custom" is referenced
+by 9.0 (images/video/picture) and 10.0 (iframes).
+
+Math: #010080 normalized = (1/255, 0, 128/255). If you change
+the custom palette in 1.0, recalculate the tableValues in
+hc-svg-filters.njk to match.
+--------------------------------------------------------------*/
+
+/*--------------------------------------------------------------
+14.0  Opacity hierarchy
+
+Stays inside the two-color palette. Apply to dividers, muted
+labels, eyebrows — never to body text or interactive controls.
+--------------------------------------------------------------*/
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(hr, .dd-offcanvas-divider) {
+  opacity: 0.5;
+}
+
+:is(.high-contrast-dark,
+    .high-contrast-light,
+    .high-contrast-custom)
+  :is(.dd-offcanvas-section, small, .text-muted) {
+  opacity: 0.7 !important;
+}
+
+/*--------------------------------------------------------------
+15.0  Print
+
+Printing with HC active falls back to default black-on-white
+and drops image filters — toner/ink behaves differently from
+screen contrast, so the HC palette doesn't translate.
+--------------------------------------------------------------*/
+
+@media print {
+  .high-contrast-dark,
+  .high-contrast-light,
+  .high-contrast-custom {
+    --hc-fg: #000;
+    --hc-bg: #fff;
+  }
+  .high-contrast-dark :is(img, video, picture, iframe),
+  .high-contrast-custom :is(img, video, picture, iframe) {
+    filter: none !important;
+  }
+}

@@ -1,0 +1,44 @@
+---
+layout: base.njk
+title: Showcase
+mainClass: pb-5 mt-4
+---
+
+{# Bootstrap 5.3 "Responsive left-aligned hero with image" example,
+   adapted from https://getbootstrap.com/docs/5.3/examples/heroes/.
+   Modified: kept the rounded-3 / border / shadow-lg from the previous
+   "Border hero" variant for visual continuity. `mx-0` on the row
+   cancels Bootstrap's negative gutter margins so the border sits
+   flush inside the container instead of bulging past it. #}
+
+<div class="container my-5">
+	<div class="row flex-lg-row-reverse align-items-center g-5 py-5 mx-0 rounded-3 border shadow-lg">
+		<div class="col-10 col-sm-8 col-lg-6 mt-0">
+			<img src="/assets/img/dfault-boilerplate-v1.jpg" class="d-block mx-lg-auto img-fluid rounded-3 shadow-lg" alt="dfault boilerplate v1 screenshot" width="700" height="500" loading="lazy">
+		</div>
+		<div class="col-lg-6">
+			<h1 class="display-5 fw-bold text-body-emphasis lh-1 mb-3">Bacon ipsum dolor amet short loin leberkas chuck</h1>
+			<p class="lead">Boudin chislic alcatra biltong. Kevin pork belly kielbasa rump polony jowl turducken. Alcatra tenderloin chuck picanha rump. Shank alcatra corned beef tail. Corned beef spare ribs tail prosciutto. Short loin rump frankfurter buffalo mortadella. Biltong shank filet mignon, chicken prosciutto chislic shoulder bacon rump ham hock short loin capicola pork belly porchetta.</p>
+			<div class="d-grid gap-2 d-md-flex justify-content-md-start">
+				<button type="button" class="btn btn-primary btn-lg px-4 me-md-2">Bacon</button>
+				<button type="button" class="btn btn-outline-secondary btn-lg px-4">Ipsum</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{# OG image preview — figure + figcaption is the semantic pair for an
+   image with a caption. Larger rounded-4 (vs hero's rounded-3) makes
+   the two sections feel related but not identical. #}
+
+<div class="container my-5">
+	<figure class="figure d-block text-center">
+		<img src="/assets/img/og-image.jpg"
+			class="figure-img img-fluid rounded-4 shadow-lg mb-3"
+			alt="Open Graph share image preview">
+		<figcaption class="figure-caption">
+			<i class="bi bi-share me-1"></i>
+			Open Graph image — how this site previews when shared on social media.
+		</figcaption>
+	</figure>
+</div>

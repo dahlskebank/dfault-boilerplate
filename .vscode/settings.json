@@ -40,9 +40,28 @@
 		"titleBar.inactiveForeground": "#e7e7e799",
 		"commandCenter.border": "#e7e7e799",
 		"sash.hoverBorder": "#4f6885",
-		"statusBarItem.remoteBackground": "#3c4f65",
-		"statusBarItem.remoteForeground": "#e7e7e7"
-	}
+		"statusBarItem.remoteBackground": "#28181f",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"activityBarTop.activeBackground": "#4f6885",
+		"activityBarTop.background": "#4f6885",
+		"activityBarTop.foreground": "#e7e7e7",
+		"activityBarTop.inactiveForeground": "#e7e7e799",
+		"commandCenter.foreground": "#e7e7e7",
+		"statusBar.debuggingBackground": "#3c4f65",
+		"statusBar.debuggingForeground": "#e7e7e7",
+		"activityBar.activeBorder": "#e7e7e7",
+		"activityBarTop.activeBorder": "#e7e7e7",
+		"statusBar.inactiveBackground": "#3c4f65"
+	},
+
+	// Hide worklog files from the Todo Tree extension. _md/worklog/ holds
+	// historical checkpoint snapshots (VRFY/TEST/PEND items captured at
+	// checkpoint time, plus swept DONE lines). The live action queue is
+	// _md/TESTING.md — that stays scanned. Without this, Todo Tree
+	// surfaces every old worklog entry as if it were live.
+	"todo-tree.filtering.excludeGlobs": [
+		"**/_md/worklog/**"
+	]
 	// `window.title` lives in the global user settings so every project's
 	// VSCode window shows its folder name in the taskbar, not just this one.
 }

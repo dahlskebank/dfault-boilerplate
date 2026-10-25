@@ -92,6 +92,18 @@
 {# --- Your custom stylesheet (loaded LAST so it can override everything above) --- #}
 <link rel="stylesheet" href="/assets/css/style.css?v={{ cacheBust }}" id="site-css" media="all">
 
+{# --- Flat utility (orthogonal binary toggle, .flat on <html>) ---
+	Loaded after style.css so it wins on border-radius / shadows.
+	Bootswatch switcher inserts new themes BEFORE #site-css, so
+	this file (and the HC file below) always stay last. #}
+<link rel="stylesheet" href="/assets/css/flat.css?v={{ cacheBust }}" id="flat-css" media="all">
+
+{# --- High contrast (loaded LAST so HC overrides everything) ---
+	Class on <html>: high-contrast-dark / -light / -custom. The
+	custom-mode SVG duotone filter is injected once near </body>
+	via hc-svg-filters.njk. #}
+<link rel="stylesheet" href="/assets/css/high-contrast.css?v={{ cacheBust }}" id="hc-css" media="all">
+
 {# --- Google Analytics ---
 	Only loads if site.gaId is set in site.json.
 	The "async" attribute means it won't block page rendering.

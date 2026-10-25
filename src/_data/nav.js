@@ -21,8 +21,13 @@ module.exports = [
 		icon: "bi-info-circle",
 	},
 	{
-		label: "Contact",
-		url: "/contact/",
-		icon: "bi-envelope",
+		label: "Showcase",
+		url: "/showcase/",
+		icon: "bi-stars",
+	},
+	{
+		label: "Cheatsheet",
+		url: "/cheatsheet/",
+		icon: "bi-grid-3x3-gap",
 	},
 ];

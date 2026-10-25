@@ -36,12 +36,7 @@
 	5.0 Content
 		5.1 Display headings
 		5.2 Anchor scroll offset
-	6.0 Accessibility
-		6.1 High-contrast: dark
-		6.2 High-contrast: light
-		6.3 High-contrast: custom
-		6.4 High-contrast shared fixes
-		6.5 Cookie notice
+	6.0 Cookie notice
 	7.0 Atmosphere
 		7.1 Film grain overlay
 		7.2 Page entry animations
@@ -53,15 +48,11 @@
 --------------------------------------------------------------*/
 
 body {
-	padding-top: 3rem;
+	padding-top: 5rem;
 }
 
 :root {
 	--bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-	--dfault-hcd-color: #ddd;
-	--dfault-hcl-color: #ddd;
-	--dfault-hcc-color: #010080;
 }
 
 /*--------------------------------------------------------------
@@ -108,54 +99,38 @@ footer a:not(.btn):active {
 /*--------------------------------------------------------------
 1.3		Scrollbar and selection
 
-	Custom scrollbar — pulled from the reservedekk.no build, adapted
-	to Bootstrap tokens so it picks up the active theme automatically.
-
-	Two layers:
-	  · Standards `scrollbar-color` / `scrollbar-width` on <html>
-	    handle Firefox and modern Chromium at every viewport size.
-	  · `::-webkit-scrollbar-*` pseudo-elements are WebKit/Blink-only
-	    and give the finer control (padding around the thumb, corner
-	    square). Desktop-only — on mobile, the OS overlay scrollbar
-	    ignores these styles anyway, and the ≥768 gate avoids any
-	    chance of the pseudo-elements reserving layout space on
-	    touch-first devices.
+	Custom scrollbar — Firefox uses scrollbar-color / scrollbar-width;
+	Chromium and Safari use the ::-webkit-scrollbar pseudo-elements.
+	The @supports-gate keeps the Firefox syntax from firing in engines
+	that already honor the webkit rules, so there's one source of
+	truth per engine. Token-driven via Bootstrap CSS variables, so
+	the scrollbar follows the active theme automatically.
 --------------------------------------------------------------*/
 
-html {
-	scrollbar-color: rgba(var(--bs-primary-rgb), 0.5) var(--bs-tertiary-bg);
-	scrollbar-width: thin;
+@supports not selector(::-webkit-scrollbar) {
+	html {
+		scrollbar-width: auto;
+		scrollbar-color: var(--bs-border-color) var(--bs-tertiary-bg);
+	}
 }
 
-@media only screen and (min-width: 768px) {
-	::-webkit-scrollbar {
-		width: 12px;
-		height: 12px;
-	}
-	::-webkit-scrollbar-track {
-		background: var(--bs-tertiary-bg);
-	}
-	::-webkit-scrollbar-thumb {
-		background: rgba(var(--bs-primary-rgb), 0.5);
-		/* 3-px transparent border padded against the track — gives
-		   the thumb a cushioned look instead of filling the full
-		   channel width. `background-clip: padding-box` keeps the
-		   color from bleeding into the border area. */
-		border: 3px solid var(--bs-tertiary-bg);
-		background-clip: padding-box;
-	}
-	::-webkit-scrollbar-thumb:hover {
-		background: rgba(var(--bs-primary-rgb), 0.8);
-		background-clip: padding-box;
-	}
-	::-webkit-scrollbar-corner {
-		background: var(--bs-tertiary-bg);
-	}
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: var(--bs-tertiary-bg);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--bs-border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--bs-primary);
+}
 
-	::selection {
-		background: rgba(var(--bs-primary-rgb), 0.3);
-		color: var(--bs-emphasis-color);
-	}
+::selection {
+	background: rgba(var(--bs-primary-rgb), 0.3);
+	color: var(--bs-emphasis-color);
 }
 
 /*--------------------------------------------------------------
@@ -187,6 +162,21 @@ html {
 .tab-content.dd-embossed {
 	border-top: none;
 	border-radius: 0 0 8px 8px;
+}
+
+/* Light-theme override:
+   The base .dd-embossed above relies on inset dark shadows that read
+   as a recessed pocket — that only works on a dark background. In
+   light mode we flip the metaphor to a raised card lifted off the
+   page with a soft drop shadow. The base rule's border-radius and
+   padding still apply; we only override background, borders, and
+   box-shadow. */
+[data-bs-theme="light"] .dd-embossed {
+	background-color: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	box-shadow:
+		0 1px 3px rgba(0, 0, 0, 0.04),
+		0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .dd-boxed {
@@ -256,6 +246,17 @@ html {
 	box-shadow:
 		0 1px 0 rgba(0, 0, 0, 0.4),
 		0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Light-theme override:
+   The navbar itself stays dark (data-bs-theme="dark" in navbar.njk),
+   but on a light page the original 0.4 / 0.35 black shadow under it
+   reads as industrial-heavy. Same two-layer shape, lower opacity so
+   the navbar still feels lifted but not bolted to the page. */
+[data-bs-theme="light"] .navbar {
+	box-shadow:
+		0 1px 0 rgba(0, 0, 0, 0.1),
+		0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 /*--------------------------------------------------------------
@@ -404,116 +405,7 @@ section[id] {
 }
 
 /*--------------------------------------------------------------
-6.0		Accessibility
---------------------------------------------------------------*/
-
-/*--------------------------------------------------------------
-6.1		High-contrast: dark
---------------------------------------------------------------*/
-
-.high-contrast-dark * {
-	color: var(--dfault-hcd-color) !important;
-	background-color: #000 !important;
-	border-color: var(--dfault-hcd-color) !important;
-	box-shadow: none !important;
-	text-shadow: none !important;
-	border-radius: 0 !important;
-}
-
-.high-contrast-dark a:hover,
-.high-contrast-dark a:focus,
-.high-contrast-dark button:focus {
-	text-decoration: underline !important;
-}
-.high-contrast-dark a {
-	color: var(--dfault-hcd-color) !important;
-}
-.high-contrast-dark svg * {
-	fill: var(--dfault-hcd-color) !important;
-}
-.high-contrast-dark ::placeholder {
-	color: var(--dfault-hcd-color) !important;
-	opacity: 0.75;
-}
-
-/*--------------------------------------------------------------
-6.2		High-contrast: light
---------------------------------------------------------------*/
-
-.high-contrast-light * {
-	color: #000 !important;
-	background-color: var(--dfault-hcl-color) !important;
-	border-color: #000 !important;
-	box-shadow: none !important;
-	text-shadow: none !important;
-	border-radius: 0 !important;
-}
-
-.high-contrast-light a:hover,
-.high-contrast-light a:focus,
-.high-contrast-light button:focus {
-	text-decoration: underline !important;
-}
-.high-contrast-light a {
-	color: #000 !important;
-}
-.high-contrast-light svg * {
-	fill: #000 !important;
-}
-.high-contrast-light ::placeholder {
-	color: #000 !important;
-	opacity: 0.75;
-}
-
-/*--------------------------------------------------------------
-6.3		High-contrast: custom
---------------------------------------------------------------*/
-
-.high-contrast-custom * {
-	color: #fff !important;
-	background-color: var(--dfault-hcc-color) !important;
-	border-color: #fff !important;
-	box-shadow: none !important;
-	text-shadow: none !important;
-	border-radius: 0 !important;
-}
-.high-contrast-custom a:hover,
-.high-contrast-custom a:focus,
-.high-contrast-custom button:focus {
-	text-decoration: underline !important;
-}
-.high-contrast-custom a {
-	color: #fff !important;
-}
-.high-contrast-custom svg * {
-	fill: #fff !important;
-}
-.high-contrast-custom ::placeholder {
-	color: #fff !important;
-	opacity: 0.75;
-}
-
-/*--------------------------------------------------------------
-6.4		High-contrast shared fixes
---------------------------------------------------------------*/
-
-.high-contrast-custom .carousel-control-prev,
-.high-contrast-custom .carousel-control-next,
-.high-contrast-custom .carousel-control-next-icon,
-.high-contrast-custom .carousel-control-prev-icon,
-.high-contrast-light .carousel-control-prev,
-.high-contrast-light .carousel-control-next,
-.high-contrast-light .carousel-control-next-icon,
-.high-contrast-light .carousel-control-prev-icon,
-.high-contrast-dark .carousel-control-prev,
-.high-contrast-dark .carousel-control-next,
-.high-contrast-dark .carousel-control-next-icon,
-.high-contrast-dark .carousel-control-prev-icon {
-	background-color: rgb(0 0 0 / 0%) !important;
-}
-
-/*--------------------------------------------------------------
-6.5		Cookie notice
+6.0		Cookie notice
 --------------------------------------------------------------*/
 
 #dd-cookie-toast {
@@ -541,11 +433,8 @@ body::before {
 	background-size: 200px 200px;
 }
 
-body.high-contrast-dark::before,
-body.high-contrast-light::before,
-body.high-contrast-custom::before {
-	display: none;
-}
+/* HC modes hide the grain via the `*::before` background reset
+   in high-contrast.css (section 3.0). Nothing extra needed here. */
 
 /*--------------------------------------------------------------
 7.2		Page entry animations
@@ -584,4 +473,191 @@ body.high-contrast-custom::before {
 	body::before {
 		display: none;
 	}
+}
+
+/*--------------------------------------------------------------
+8.0		Cheatsheet page (/cheatsheet/)
+		Adapted from Bootstrap docs SCSS (MIT) — _component-examples,
+		_sidebar, _toc — to match the live cheatsheet appearance.
+		Theme-aware via Bootstrap CSS vars: borders track --bs-border-color,
+		grid/active tints track --bs-primary-rgb, so light/dark/HC and
+		every Bootswatch theme swap inherit colours automatically.
+--------------------------------------------------------------*/
+
+/* /cheatsheet/ runs full-bleed: lift the boilerplate's container max-width
+   cap so the TOC sidebar + content can breathe at xl+. Scoped to
+   body.bd-cheatsheet-page (set via frontmatter) so every other page still
+   uses the boilerplate's standard container behaviour. */
+body.bd-cheatsheet-page #dd-page > .container {
+	max-width: none;
+}
+
+/* --- Section spacing + scroll-margin so anchor jumps clear the fixed navbar --- */
+.bd-cheatsheet section + section {
+	margin-top: 3rem;
+}
+
+.bd-cheatsheet [id],
+.bd-cheatsheet h2,
+.bd-cheatsheet h3 {
+	scroll-margin-top: 5rem;
+}
+
+/* --- Demo canvas (bd-example + bd-code-snippet) ---
+   Border-only, NO background fill. Full-bleed on narrow widths,
+   rounded with full border at md+. Padding via custom property so
+   nested-component overrides below can subtract it cleanly. */
+.bd-example,
+.bd-code-snippet {
+	--bd-example-padding: 1rem;
+	position: relative;
+	padding: var(--bd-example-padding);
+	margin: 0 -0.75rem 1rem;
+	border: 1px solid var(--bs-border-color);
+	border-width: 1px 0;
+}
+
+@media (min-width: 768px) {
+	.bd-example,
+	.bd-code-snippet {
+		--bd-example-padding: 1.5rem;
+		margin-right: 0;
+		margin-left: 0;
+		border-width: 1px;
+		border-radius: var(--bs-border-radius);
+	}
+}
+
+/* The cheatsheet markup nests <div class="bd-example m-0 border-0">
+   inside <div class="bd-example-snippet bd-code-snippet">. The inline
+   m-0/border-0 utilities flatten the inner wrapper so only the outer
+   canvas shows — no extra reset needed here. */
+
+/* Component-specific spacing inside .bd-example so successive demos
+   (alerts, navbars, progress bars) don't sit flush. */
+.bd-example > .nav + .nav,
+.bd-example > .alert + .alert,
+.bd-example > .navbar + .navbar,
+.bd-example > .progress + .progress {
+	margin-top: 1rem;
+}
+
+.bd-example > :last-child,
+.bd-example > nav:last-child .breadcrumb {
+	margin-bottom: 0;
+}
+
+.bd-example + p {
+	margin-top: 2rem;
+}
+
+/* Open dropdowns by default in demos */
+.bd-example > .dropdown-menu {
+	position: static;
+	display: block;
+}
+
+/* Inline button spacing */
+.bd-example > .btn,
+.bd-example > .btn-group {
+	margin: 0.25rem 0.125rem;
+}
+
+.bd-example > .btn-toolbar + .btn-toolbar {
+	margin-top: 0.5rem;
+}
+
+/* Form controls + images */
+.bd-example > .form-control + .form-control {
+	margin-top: 0.5rem;
+}
+
+.bd-example > svg + svg,
+.bd-example > img + img {
+	margin-left: 0.5rem;
+}
+
+/* List groups */
+.bd-example > .list-group {
+	max-width: 400px;
+}
+
+.bd-example > [class*="list-group-horizontal"] {
+	max-width: 100%;
+}
+
+/* Pagination */
+.bd-example .pagination {
+	margin-bottom: 0;
+}
+
+/* Critical: reset fixed/sticky positioning inside demo wrappers so
+   demo navbars stay inside their box instead of latching onto the
+   viewport. Negative margins compensate for the wrapper padding. */
+.bd-example .fixed-top,
+.bd-example .sticky-top {
+	position: static;
+	margin: calc(-1 * var(--bd-example-padding)) calc(-1 * var(--bd-example-padding)) var(--bd-example-padding);
+}
+
+.bd-example .fixed-bottom,
+.bd-example .sticky-bottom {
+	position: static;
+	margin: var(--bd-example-padding) calc(-1 * var(--bd-example-padding)) calc(-1 * var(--bd-example-padding));
+}
+
+/* --- Grid example rows: theme-aware semi-transparent primary tint --- */
+.bd-example-row [class^="col"],
+.bd-example-row [class*=" col"] {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: rgba(var(--bs-primary-rgb), 0.15);
+	border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.bd-example-row .row + .row {
+	margin-top: 1rem;
+}
+
+.bd-example-row-flex-cols .row {
+	min-height: 10rem;
+	background-color: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.bd-example-flex div:not(.vr) {
+	background-color: rgba(var(--bs-primary-rgb), 0.15);
+	border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+}
+
+/* --- Sidebar (bd-aside): sticky at xl+, scrolls within its own viewport --- */
+.bd-aside {
+	flex: 0 0 240px;
+}
+
+@media (min-width: 1200px) {
+	.bd-aside {
+		position: sticky;
+		top: 5rem;
+		max-height: calc(100vh - 6rem);
+		overflow-y: auto;
+	}
+}
+
+/* --- TOC links: left-border accent on hover/active, no fill --- */
+#toc a {
+	display: block;
+	padding: 0.125rem 0 0.125rem 0.75rem;
+	color: inherit;
+	text-decoration: none;
+	border-left: 0.125rem solid transparent;
+}
+
+#toc a:hover,
+#toc a.active {
+	color: var(--bs-primary);
+	border-left-color: var(--bs-primary);
+}
+
+#toc a.active {
+	font-weight: 500;
 }

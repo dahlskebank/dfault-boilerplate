@@ -1,0 +1,51 @@
+{#
+	 ============================================================
+		BREADCRUMB  —  src/_includes/breadcrumb.njk
+	 ============================================================
+
+	 Renders a Bootstrap breadcrumb trail from the current page's URL.
+	 Drives label lookup off `src/_data/nav.js` so labels stay synced
+	 with the navbar without any per-page configuration.
+
+	 USAGE:
+	   {% include "breadcrumb.njk" %}
+
+	 PAGES WITH A DYNAMIC LEAF (e.g. detail/?id=…) can override
+	 the active leaf with raw HTML by setting `breadcrumbActiveHtml`
+	 in their frontmatter or before the include:
+
+	   {% set breadcrumbActiveHtml %}
+	     <span id="my-dynamic-leaf">…</span>
+	   {% endset %}
+	   {% include "breadcrumb.njk" %}
+
+	 BEHAVIOUR:
+	   - Renders nothing for depth-1 pages (Home, About, Contact, etc.)
+	   - Label resolution priority: nav.js child > collection entry
+	     > page.title > title-cased URL slug
+	   - The actual lookup happens in the `breadcrumbs` filter in
+	     eleventy.config.js — see there for the exact rules.
+	 ============================================================
+#}
+
+{% set crumbs = page.url | breadcrumbs(nav, title, collections) %}
+
+{% if crumbs %}
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb mb-1">
+			{% for crumb in crumbs %}
+				<li class="breadcrumb-item{% if crumb.isActive %} active{% endif %}"{% if crumb.isActive %} aria-current="page"{% endif %}>
+					{%- if crumb.isActive -%}
+						{%- if breadcrumbActiveHtml -%}
+							{{ breadcrumbActiveHtml | safe }}
+						{%- else -%}
+							{{ crumb.label }}
+						{%- endif -%}
+					{%- else -%}
+						<a href="{{ crumb.url }}">{{ crumb.label }}</a>
+					{%- endif -%}
+				</li>
+			{% endfor %}
+		</ol>
+	</nav>
+{% endif %}

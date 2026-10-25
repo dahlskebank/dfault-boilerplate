@@ -1,0 +1,54 @@
+{# ============================================================
+	HC SVG FILTERS  —  src/_includes/hc-svg-filters.njk
+	============================================================
+
+	Inline SVG filter definitions used by high-contrast.css.
+
+	Currently defines:
+	  - #hc-duotone-custom — duotone for .high-contrast-custom
+	    (#010080 navy → #fff white).
+
+	Included once from base.njk near </body>. The <svg> element
+	itself is sized to 0×0 and absolutely positioned so it never
+	renders; only its <filter> defs are referenced from CSS via
+	`filter: url(#hc-duotone-custom)`.
+
+	WHY HERE INSTEAD OF IN CSS?
+	---------------------------
+	SVG filters can be embedded as data: URIs in CSS, but that
+	makes them harder to read and edit, and Firefox in particular
+	has been flaky about referencing filters from data: URIs in
+	the past. Inlining the SVG once per page is the cleanest path.
+
+	IF YOU CHANGE THE CUSTOM PALETTE
+	--------------------------------
+	The tableValues below encode the endpoints of the duotone:
+	shadow color (#010080) on the LEFT, highlight color (#fff)
+	on the RIGHT.
+
+	  #010080 normalized = (1/255, 0/255, 128/255)
+	                    = (0.0039, 0,    0.5020)
+
+	If you change --hc-fg / --hc-bg in high-contrast.css for
+	.high-contrast-custom, recompute these tableValues to match.
+	============================================================ #}
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="0"
+     height="0"
+     style="position:absolute;width:0;height:0;overflow:hidden"
+     aria-hidden="true"
+     focusable="false">
+	<filter id="hc-duotone-custom">
+		<feColorMatrix type="matrix" values="
+			0.33 0.33 0.33 0 0
+			0.33 0.33 0.33 0 0
+			0.33 0.33 0.33 0 0
+			0    0    0    1 0"/>
+		<feComponentTransfer color-interpolation-filters="sRGB">
+			{# shadows → bg (#010080), highlights → fg (#fff) #}
+			<feFuncR type="table" tableValues="0.0039 1"/>
+			<feFuncG type="table" tableValues="0      1"/>
+			<feFuncB type="table" tableValues="0.5020 1"/>
+		</feComponentTransfer>
+	</filter>
+</svg>

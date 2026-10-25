@@ -19,7 +19,7 @@
 	"lang": "en",
 
 	"_comment_version": "Footer version. Bump with `npm run bump:patch|minor|major`. The global Claude Code Stop hook reminds you if src/ changes go uncommitted without a bump.",
-	"version": "v1.1.0",
+	"version": "v1.1.2",
 
 	"author": {
 		"name": "Your Name",
@@ -43,7 +43,7 @@
 
 	"_comment_bootswatch": "Default Bootswatch theme loaded on first visit. Set to 'default' for plain Bootstrap. Set bootswatchSwitcher to false to hide the theme switcher in production.",
 	"defaultBootswatchTheme": "default",
-	"bootswatchSwitcher": false,
+	"bootswatchSwitcher": true,
 
 	"_comment_fonts": "Google Fonts URL. Leave empty string to use system fonts. Example: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'",
 	"googleFontsUrl": "",

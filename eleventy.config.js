@@ -26,6 +26,11 @@
  * ============================================================
  */
 
+// Node built-ins used by the JS bundling step below.
+// `fs` reads/writes files, `path` builds OS-safe file paths.
+const fs = require("fs");
+const path = require("path");
+
 module.exports = function (eleventyConfig) {
 	/* ----------------------------------------------------------
 	 *  PASSTHROUGH COPIES
@@ -60,6 +65,88 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addGlobalData("cacheBust", Date.now());
 
 	/* ----------------------------------------------------------
+	 *  JS BUNDLING
+	 * ----------------------------------------------------------
+	 *  The site-wide scripts live as SEPARATE source files in
+	 *  src/assets/js/ (easy to read, edit, and port between
+	 *  projects), but shipping six tiny <script> tags means six
+	 *  HTTP requests per page. So after every build (including
+	 *  --watch rebuilds) we concatenate them into ONE file:
+	 *
+	 *      _site/assets/js/bundle.js   ← loaded by base.njk
+	 *
+	 *  and delete the individual copies that the passthrough
+	 *  copy above placed in _site/, so the deploy stays clean.
+	 *
+	 *  NOTES:
+	 *  - Order matters and mirrors the old <script> tag order.
+	 *  - bootswatch-switcher.js is only bundled when
+	 *    site.bootswatchSwitcher is true — same condition
+	 *    base.njk used for its old <script> tag.
+	 *  - Page-specific scripts (e.g. cheatsheet.js via the
+	 *    `extraScripts:` frontmatter) are NOT bundled — they
+	 *    stay as standalone files and are left untouched here.
+	 *  - theme-init.njk stays inline in <head> — it must run
+	 *    before any CSS loads to prevent theme flashing (FOUC).
+	 *  - scripts/minify.js runs after this and minifies the
+	 *    bundle like any other JS file in _site/assets/.
+	 * ---------------------------------------------------------- */
+	eleventyConfig.on("eleventy.after", ({ dir }) => {
+		const srcJsDir = path.join(__dirname, "src", "assets", "js");
+		const outJsDir = path.join(__dirname, dir.output, "assets", "js");
+
+		// Read site.json directly (config-side code can't use the
+		// template data cascade, so we load the flag ourselves).
+		const site = JSON.parse(
+			fs.readFileSync(path.join(__dirname, "src", "_data", "site.json"), "utf8")
+		);
+
+		// Everything that used to be its own <script> tag in base.njk,
+		// in the same order the tags appeared.
+		const bundleFiles = [
+			"dfault.js",
+			"theme-toggle.js",
+			"flat-toggle.js",
+			...(site.bootswatchSwitcher ? ["bootswatch-switcher.js"] : []),
+			"offcanvas-init.js",
+			"dd-copy.js",
+		];
+
+		// Concatenate with a banner per file (so you can still tell
+		// where code came from when viewing source) and a `;` between
+		// files (guards against a file missing its final semicolon).
+		const bundle = bundleFiles
+			.filter((f) => {
+				const exists = fs.existsSync(path.join(srcJsDir, f));
+				if (!exists) console.warn(`[js-bundle] Skipping missing file: ${f}`);
+				return exists;
+			})
+			.map((f) => `/* ===== ${f} ===== */\n` + fs.readFileSync(path.join(srcJsDir, f), "utf8"))
+			.join("\n;\n");
+
+		fs.mkdirSync(outJsDir, { recursive: true });
+		fs.writeFileSync(path.join(outJsDir, "bundle.js"), bundle);
+
+		// Remove the individual copies from _site/ — they're now inside
+		// bundle.js. (Sources in src/assets/js/ are untouched.) The
+		// switcher file is removed even when excluded from the bundle,
+		// since nothing references it in that case either.
+		const bundledOrDead = [
+			"dfault.js",
+			"theme-toggle.js",
+			"flat-toggle.js",
+			"bootswatch-switcher.js",
+			"offcanvas-init.js",
+			"dd-copy.js",
+		];
+		for (const f of bundledOrDead) {
+			fs.rmSync(path.join(outJsDir, f), { force: true });
+		}
+
+		console.log(`[js-bundle] Wrote bundle.js (${bundleFiles.length} files)`);
+	});
+
+	/* ----------------------------------------------------------
 	 *  CUSTOM FILTERS
 	 * ----------------------------------------------------------
 	 *  Filters transform data inside templates.
@@ -84,6 +171,60 @@ module.exports = function (eleventyConfig) {
 	// Formats a JS Date object as an ISO date string (for sitemap.xml).
 	eleventyConfig.addFilter("isoDate", (date) => {
 		return (date instanceof Date ? date : new Date(date)).toISOString().split("T")[0];
+	});
+
+	// {{ page.url | breadcrumbs(nav, title, collections) }}
+	// Returns an array of crumbs ({ label, url, isActive }) for the given page,
+	// or null if the page is too shallow to need breadcrumbs (depth < 2).
+	//
+	// The render template is src/_includes/breadcrumb.njk — it walks the array
+	// returned here and produces the Bootstrap breadcrumb markup. We do the
+	// label-resolution in JS instead of Nunjucks because (a) Nunjucks `set`
+	// inside `for` doesn't propagate cleanly, and (b) the lookup needs to
+	// recognise four sources of truth in priority order:
+	//
+	//   1. nav.js top-level / hardcoded children
+	//   2. nav.js `dynamicChildren` collections (if you adopt that pattern)
+	//   3. The page's own `title:` frontmatter
+	//   4. Title-cased URL slug fallback
+	//
+	// Currently handles depth-2 URLs only (e.g. /tools/foo/). Pages with deeper
+	// paths fall back to a generic "TopSection > Page Title" pair.
+	eleventyConfig.addFilter("breadcrumbs", function (url, nav, fallbackTitle, collections) {
+		if (!url || typeof url !== "string") return null;
+
+		// Filter out empty strings from leading/trailing slashes:
+		// "/tools/rydde-varianter/" → ["tools", "rydde-varianter"]
+		const parts = url.split("/").filter(Boolean);
+		if (parts.length < 2) return null; // depth-1 pages get no breadcrumbs
+
+		const topSlug = parts[0];
+		const topUrl = "/" + topSlug + "/";
+
+		const titleCase = (slug) =>
+			slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+		// 1. Top-level label from nav.js
+		const topItem = (nav || []).find((item) => item.url === topUrl);
+		const topLabel = topItem ? topItem.label : titleCase(topSlug);
+
+		// 2. Leaf label — try hardcoded children, then dynamic collection, then page title.
+		let leafLabel;
+		if (topItem && Array.isArray(topItem.children)) {
+			const child = topItem.children.find((c) => c.url === url);
+			if (child) leafLabel = child.label;
+		}
+		if (!leafLabel && topItem && topItem.dynamicChildren && collections) {
+			const collection = collections[topItem.dynamicChildren] || [];
+			const entry = collection.find((p) => p.url === url);
+			if (entry) leafLabel = entry.data && entry.data.title;
+		}
+		if (!leafLabel) leafLabel = fallbackTitle || titleCase(parts[parts.length - 1]);
+
+		return [
+			{ label: topLabel, url: topUrl, isActive: false },
+			{ label: leafLabel, url: url, isActive: true },
+		];
 	});
 
 	/* ----------------------------------------------------------
